@@ -1,4 +1,4 @@
-package com.github.agadar.familytreestatistics;
+package com.github.agadar.famtreestats;
 
 import java.util.HashMap;
 import java.util.Map;
