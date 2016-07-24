@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
  *
  * @author Agadar <https://github.com/Agadar/>
  */
-public class FamilyTreeStatisticsMain
+public class FamilyTreeStatsMain
 {
     
     private final static DateTimeFormatter formatter = 
@@ -18,7 +18,7 @@ public class FamilyTreeStatisticsMain
      */
     public static void main(String[] args) throws IOException
     {
-        Statistics stats = Calculator.calculate("C:\\Users\\Martin\\Desktop\\donkersloten.csv");
+        Statistics stats = FamilyTreeStatsCalculator.calculate("C:\\Users\\Martin\\Desktop\\donkersloten.csv");
         System.out.println(stats);
         
     }

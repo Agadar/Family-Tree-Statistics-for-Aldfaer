@@ -18,7 +18,7 @@ import java.util.Map;
  * 
  * @author Agadar <https://github.com/Agadar/>
  */
-public final class Calculator 
+public final class FamilyTreeStatsCalculator 
 {
     private final static String SplitSymbol = ";";
     private final static String ColumnMarriageDate = "TR_sortdatum";
@@ -60,7 +60,7 @@ public final class Calculator
             // Retrieve and parse values
             final LocalDate marriageDate = dateStringToDate(map.get(ColumnMarriageDate), yearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(ColumnBirthDate), dayMonthYearFormat);
-            final RelationshipType relationshipType = relationshipStringToEnum(map.get(ColumnRelationshipType));
+            final Relationship relationshipType = relationshipStringToEnum(map.get(ColumnRelationshipType));
             final LocalDate deathDate = dateStringToDate(map.get(ColumnDeathDate), dayMonthYearFormat);
             final int id = idStringToInt(map.get(ColumnId));
             final int fatherId = idStringToInt(map.get(ColumnFatherId));
@@ -69,7 +69,7 @@ public final class Calculator
             // Use entry for average age at marriage if birthDate and marriageDate are not null,
             // and relationshipType is 'Marriage'.
             if (birthDate != null && marriageDate != null && 
-                relationshipType == RelationshipType.Marriage)
+                relationshipType == Relationship.Marriage)
             {
                 ageAtMarriageDivBy++;
                 ageAtMarriageTotal += DAYS.between(birthDate, marriageDate);
@@ -149,14 +149,14 @@ public final class Calculator
      * @param relationshipStr the String to find the corresponding RelationshipType of
      * @return the corresponding RelationshipType, or RelationshipType.Unknown
      */
-    private static RelationshipType relationshipStringToEnum(String relationshipStr)
+    private static Relationship relationshipStringToEnum(String relationshipStr)
     {
         if (relationshipStr == null)
         {
-            return RelationshipType.Unknown;
+            return Relationship.Unknown;
         }
 
-        return RelationshipType.getByUnderlyingString(relationshipStr.trim());
+        return Relationship.getByUnderlyingString(relationshipStr.trim());
     }
     
     /**
