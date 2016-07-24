@@ -9,8 +9,9 @@ public enum Column
 {
     DateMarriage("TR_sortdatum"),
     DateBirth("Geboorte"),
-    TypeRelationship("huw.type"),
     DateDeath("Overlijden"),
+    TypeRelationship("huw.type"),
+    TypeSex("Geslacht"),
     IdSelf("Intern_nummer"),
     IdFather("ID_vader"),
     IdMother("ID_moeder");

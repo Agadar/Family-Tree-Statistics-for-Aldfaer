@@ -57,10 +57,11 @@ public final class FamilyTreeStatsCalculator
                     Column.DateMarriage.getColumnName()), yearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(
                     Column.DateBirth.getColumnName()), dayMonthYearFormat);
-            final Relationship relationshipType = relationshipStringToEnum(map.get(
-                    Column.TypeRelationship.getColumnName()));
             final LocalDate deathDate = dateStringToDate(map.get(
                     Column.DateDeath.getColumnName()), dayMonthYearFormat);
+            final Relationship relationshipType = relationshipStringToEnum(map.get(
+                    Column.TypeRelationship.getColumnName()));
+            final Sex sexType = Sex.getByUnderlyingString(map.get(Column.TypeSex.getColumnName()));
             final int id = idStringToInt(map.get(Column.IdSelf.getColumnName()));
             final int fatherId = idStringToInt(map.get(Column.IdFather.getColumnName()));
             final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
