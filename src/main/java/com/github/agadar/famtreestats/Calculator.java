@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * The class responsible for calculating the family tree statistics.
+ * 
  * @author Agadar <https://github.com/Agadar/>
  */
 public final class Calculator 
@@ -39,7 +40,7 @@ public final class Calculator
     public static String calculate(String filepath) throws IOException
     {
         // Retrieve data from csv file.
-        final List<Map<String, String>> results = readCsvFromFile(filepath);
+        final List<Map<String, String>> results = readPersonsFromFile(filepath);
         
         // Values for calculating the averages           
         long ageAtMarriageTotal = 0;
@@ -51,13 +52,13 @@ public final class Calculator
         for (Map<String, String> map : results)
         {
             // Retrieve and parse values
-            final LocalDate marriageDate = toLocalDate(map.get(ColumnMarriageDate), yearMonthDayFormat);
-            final LocalDate birthDate = toLocalDate(map.get(ColumnBirthDate), dayMonthYearFormat);
-            final RelationshipType relationshipType = toRelationshipType(map.get(ColumnRelationshipType));
-            final LocalDate deathDate = toLocalDate(map.get(ColumnDeathDate), dayMonthYearFormat);
-            final int id = toInteger(map.get(ColumnId));
-            final int fatherId = toInteger(map.get(ColumnFatherId));
-            final int motherId = toInteger(map.get(ColumnMotherId));
+            final LocalDate marriageDate = dateStringToDate(map.get(ColumnMarriageDate), yearMonthDayFormat);
+            final LocalDate birthDate = dateStringToDate(map.get(ColumnBirthDate), dayMonthYearFormat);
+            final RelationshipType relationshipType = relationshipStringToEnum(map.get(ColumnRelationshipType));
+            final LocalDate deathDate = dateStringToDate(map.get(ColumnDeathDate), dayMonthYearFormat);
+            final int id = idStringToInt(map.get(ColumnId));
+            final int fatherId = idStringToInt(map.get(ColumnFatherId));
+            final int motherId = idStringToInt(map.get(ColumnMotherId));
             
             // Use entry for average age at marriage if birthDate and marriageDate are not null,
             // and relationshipType is 'Marriage'.
@@ -81,7 +82,15 @@ public final class Calculator
             ageAtDeathTotal / ageAtDeathDivBy / 365, -1);
     }
     
-    private static LocalDate toLocalDate(String dateStr, DateTimeFormatter formatter)
+    /**
+     * Attempts to parse the given String to a LocalDate using the supplied
+     * formatter, or null if parsing failed.
+     * 
+     * @param dateStr the String to parse to LocalDate
+     * @param formatter the formatter to use
+     * @return the parsed LocalDate, or null if parsing failed
+     */
+    private static LocalDate dateStringToDate(String dateStr, DateTimeFormatter formatter)
     {
         try
         {
@@ -90,13 +99,8 @@ public final class Calculator
                 return null;
             }
 
+            // Some dates are prefixed with 'N-', so that needs to be removed.
             dateStr = dateStr.trim().replaceAll("N-", "");
-
-            if (dateStr.isEmpty())
-            {
-                return null;
-            }
-        
             return LocalDate.parse(dateStr, formatter);
         }
         catch (DateTimeParseException ex)
@@ -105,23 +109,24 @@ public final class Calculator
         }
     }
     
-    private static int toInteger(String intStr)
+    /**
+     * Attempts to parse the given id value from String to integer. If the given
+     * id value is null, empty, or otherwise couldn't be parsed to an integer,
+     * then '-1' is returned.
+     * 
+     * @param idStr the id String to parse to integer
+     * @return the parsed id value, or -1 if parsing failed
+     */
+    private static int idStringToInt(String idStr)
     {
         try
         {
-            if (intStr == null)
+            if (idStr == null)
             {
                 return -1;
             }
-            
-            intStr = intStr.trim();
-            
-            if (intStr.isEmpty())
-            {
-                return -1;
-            }
-            
-            return Integer.parseInt(intStr);
+
+            return Integer.parseInt(idStr.trim());
         }
         catch (NumberFormatException ex)
         {
@@ -129,31 +134,33 @@ public final class Calculator
         }
     }
     
-    private static RelationshipType toRelationshipType(String relationshipStr)
+    /**
+     * Returns the RelationshipType to which the given String is mapped, or
+     * RelationshipType.Unknown if there exists no type to which the given String
+     * is mapped.
+     * 
+     * @param relationshipStr the String to find the corresponding RelationshipType of
+     * @return the corresponding RelationshipType, or RelationshipType.Unknown
+     */
+    private static RelationshipType relationshipStringToEnum(String relationshipStr)
     {
         if (relationshipStr == null)
         {
             return RelationshipType.Unknown;
         }
-        
-        relationshipStr = relationshipStr.trim();
-        
-        if (relationshipStr.isEmpty())
-        {
-            return RelationshipType.Unknown;
-        }
-        
-        RelationshipType type = RelationshipType.getByUnderlyingString(relationshipStr);
-        
-        if (type == null)
-        {
-            return RelationshipType.Unknown;
-        }
-        
-        return type;
+
+        return RelationshipType.getByUnderlyingString(relationshipStr.trim());
     }
     
-    private static List<Map<String, String>> readCsvFromFile(String filepath) throws IOException
+    /**
+     * Reads the persons CSV-file found on the specified path, and returns the
+     * retrieved persons.
+     * 
+     * @param filepath the path to the persons CSV-file
+     * @return list of maps, each map holding a person's data
+     * @throws IOException if something went wrong while finding/reading the file
+     */
+    private static List<Map<String, String>> readPersonsFromFile(String filepath) throws IOException
     {
         final List<Map<String, String>> results = new ArrayList<>();
         final File file = new File(filepath);
@@ -165,7 +172,7 @@ public final class Calculator
             // Read column names.
             if ((line = reader.readLine()) == null)
             {
-                throw new RuntimeException("File is empty!");
+                throw new IOException("File on path '" + filepath + "' is empty!");
             }
             
             final String[] columns = line.split(SplitSymbol);

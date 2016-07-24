@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Enumerator for the marriage type.
+ * 
  * @author Agadar <https://github.com/Agadar/>
  */
 public enum RelationshipType 
@@ -54,13 +55,14 @@ public enum RelationshipType
     }
     
     /**
-     * Returns the RelationshipType mapped to the given string.
+     * Returns the RelationshipType mapped to the given string. If no type is
+     * mapped to the given string, then RelationshipType.Unknown is returned.
      * 
      * @param string the string
      * @return the RelationshipType mapped to the given string
      */
     public static RelationshipType getByUnderlyingString(String string)
     {
-        return Reverse.get(string);
+        return Reverse.getOrDefault(string, RelationshipType.Unknown);
     }
 }
