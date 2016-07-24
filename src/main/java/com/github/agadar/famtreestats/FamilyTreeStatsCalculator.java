@@ -44,10 +44,18 @@ public final class FamilyTreeStatsCalculator
         final List<Map<String, String>> results = readPersonsFromFile(filepath);
         
         // Values for calculating the averages           
-        long ageAtMarriageTotal = 0;
-        int ageAtMarriageDivBy = 0;
-        long ageAtDeathTotal = 0;
-        int ageAtDeathDivBy = 0;
+        long ageAtMarriageBothTotal = 0;
+        int ageAtMarriageBothDivBy = 0;
+        long ageAtMarriageMaleTotal = 0;
+        int ageAtMarriageMaleDivBy = 0;
+        long ageAtMarriageFemaleTotal = 0;
+        int ageAtMarriageFemaleDivBy = 0;      
+        long ageAtDeathBothTotal = 0;
+        int ageAtDeathBothDivBy = 0;
+        long ageAtDeathMaleTotal = 0;
+        int ageAtDeathMaleDivBy = 0;
+        long ageAtDeathFemaleTotal = 0;
+        int ageAtDeathFemaleDivBy = 0;
             
         // Iterate over retrieved data.
         for (Map<String, String> map : results)
@@ -71,22 +79,74 @@ public final class FamilyTreeStatsCalculator
             if (birthDate != null && marriageDate != null && 
                 relationshipType == Relationship.Marriage)
             {
-                ageAtMarriageDivBy++;
-                ageAtMarriageTotal += DAYS.between(birthDate, marriageDate);
+                ageAtMarriageBothDivBy++;
+                long daysBetween = DAYS.between(birthDate, marriageDate);
+                ageAtMarriageBothTotal += daysBetween;
+                
+                if (sexType == Sex.Male)
+                {
+                    ageAtMarriageMaleDivBy++;
+                    ageAtMarriageMaleTotal += daysBetween;
+                }
+                else if (sexType == Sex.Female)
+                {
+                    ageAtMarriageFemaleDivBy++;
+                    ageAtMarriageFemaleTotal += daysBetween;
+                }
             }
             
             // Use entry for average age at death if birthDate and deathDate are not null.
             if (birthDate != null && deathDate != null)
             {
-                ageAtDeathDivBy++;
-                ageAtDeathTotal += DAYS.between(birthDate, deathDate);
+                ageAtDeathBothDivBy++;
+                long daysBetween = DAYS.between(birthDate, deathDate);
+                ageAtDeathBothTotal += daysBetween;
+                
+                if (sexType == Sex.Male)
+                {
+                    ageAtDeathMaleDivBy++;
+                    ageAtDeathMaleTotal += daysBetween;
+                }
+                else if (sexType == Sex.Female)
+                {
+                    ageAtDeathFemaleDivBy++;
+                    ageAtDeathFemaleTotal += daysBetween;
+                }
             }
         }
         
+        System.out.println(ageAtMarriageBothDivBy);
+        System.out.println(ageAtDeathBothDivBy);
+        
         // Format and return string.
-        final int ageAtMarriageBoth = (int) (ageAtMarriageTotal / ageAtMarriageDivBy / 365);
-        final int ageAtDeathBoth = (int) (ageAtDeathTotal / ageAtDeathDivBy / 365);
-        return new Statistics(ageAtMarriageBoth, -1, -1, ageAtDeathBoth, -1, -1, -1);
+        final int ageAtMarriageBothResult = averageYears(ageAtMarriageBothTotal, 
+                                                         ageAtMarriageBothDivBy);
+        final int ageAtMarriageMaleResult = averageYears(ageAtMarriageMaleTotal, 
+                                                         ageAtMarriageMaleDivBy);
+        final int ageAtMarriageFemaleResult = averageYears(ageAtMarriageFemaleTotal, 
+                                                           ageAtMarriageFemaleDivBy);
+        final int ageAtDeathBothResult = averageYears(ageAtDeathBothTotal, 
+                                                      ageAtDeathBothDivBy);
+        final int ageAtDeathMaleResult = averageYears(ageAtDeathMaleTotal, 
+                                                      ageAtDeathMaleDivBy);
+        final int ageAtDeathFemaleResult = averageYears(ageAtDeathFemaleTotal, 
+                                                        ageAtDeathFemaleDivBy);
+        return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
+                ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
+                ageAtDeathFemaleResult, -1);
+    }
+    
+    /**
+     * Convenience method for dividing the given days by the given divideBy
+     * and translating it to rounded years.
+     * 
+     * @param total
+     * @param quantity
+     * @return 
+     */
+    private static int averageYears(long days, int divideBy)
+    {
+        return (int) Math.round((double) days / (float) divideBy / 365);
     }
     
     /**
