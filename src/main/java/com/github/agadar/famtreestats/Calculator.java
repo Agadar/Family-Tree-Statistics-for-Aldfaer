@@ -28,16 +28,22 @@ public final class Calculator
     private final static String ColumnId = "Intern_nummer";
     private final static String ColumnFatherId = "ID_vader";
     private final static String ColumnMotherId = "ID_moeder";
-    private final static String CalculateFormat 
-        = "Gem. leeftijd bij huwelijk: %s.%n"
-        + "Gem. leeftijd bij overlijden: %s.%n"
-        + "Gem. aantal kinderen per huwelijk: %s.";
     private final static DateTimeFormatter dayMonthYearFormat = 
         DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private final static DateTimeFormatter yearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
-    public static String calculate(String filepath) throws IOException
+    /**
+     * Reads the persons CSV-file found on the specified path, and uses these
+     * persons list to calculate several statistics, returned in a Statistics
+     * object.
+     * 
+     * @param filepath the path to the persons CSV-file
+     * @return the calculated statistics
+     * @throws IOException IOException if something went wrong while 
+     * finding/reading the file
+     */
+    public static Statistics calculate(String filepath) throws IOException
     {
         // Retrieve data from csv file.
         final List<Map<String, String>> results = readPersonsFromFile(filepath);
@@ -78,8 +84,9 @@ public final class Calculator
         }
         
         // Format and return string.
-        return String.format(CalculateFormat, ageAtMarriageTotal / ageAtMarriageDivBy / 365,
-            ageAtDeathTotal / ageAtDeathDivBy / 365, -1);
+        final int ageAtMarriageBoth = (int) (ageAtMarriageTotal / ageAtMarriageDivBy / 365);
+        final int ageAtDeathBoth = (int) (ageAtDeathTotal / ageAtDeathDivBy / 365);
+        return new Statistics(ageAtMarriageBoth, -1, -1, ageAtDeathBoth, -1, -1, -1);
     }
     
     /**

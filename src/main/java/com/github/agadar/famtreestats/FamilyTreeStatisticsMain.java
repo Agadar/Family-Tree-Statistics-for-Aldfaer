@@ -18,11 +18,9 @@ public class FamilyTreeStatisticsMain
      */
     public static void main(String[] args) throws IOException
     {
-        String results = Calculator.calculate("C:\\Users\\Martin\\Desktop\\donkersloten.csv");
-        System.out.println(results);
-        //String date = "18-10-1949";
-        //LocalDate datetime = LocalDate.parse(date, formatter);
-        //System.out.println(datetime);
+        Statistics stats = Calculator.calculate("C:\\Users\\Martin\\Desktop\\donkersloten.csv");
+        System.out.println(stats);
+        
     }
     
 }
