@@ -20,11 +20,14 @@ import java.util.Map;
  */
 public final class FamilyTreeStatsCalculator 
 {
+    /** Symbol used for splitting values in persons CSV file. */
     private final static String SplitSymbol = ";";
 
+    /** Date formatter for dd-MM-yyyy. */
     private final static DateTimeFormatter dayMonthYearFormat = 
         DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
+    /** Date formatter for yyyy-MM-dd. */
     private final static DateTimeFormatter yearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
@@ -114,10 +117,7 @@ public final class FamilyTreeStatsCalculator
                 }
             }
         }
-        
-        System.out.println(ageAtMarriageBothDivBy);
-        System.out.println(ageAtDeathBothDivBy);
-        
+
         // Format and return string.
         final int ageAtMarriageBothResult = averageYears(ageAtMarriageBothTotal, 
                                                          ageAtMarriageBothDivBy);
