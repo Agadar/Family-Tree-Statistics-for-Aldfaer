@@ -21,15 +21,10 @@ import java.util.Map;
 public final class FamilyTreeStatsCalculator 
 {
     private final static String SplitSymbol = ";";
-    private final static String ColumnMarriageDate = "TR_sortdatum";
-    private final static String ColumnBirthDate = "Geboorte";
-    private final static String ColumnRelationshipType = "huw.type";
-    private final static String ColumnDeathDate = "Overlijden";
-    private final static String ColumnId = "Intern_nummer";
-    private final static String ColumnFatherId = "ID_vader";
-    private final static String ColumnMotherId = "ID_moeder";
+
     private final static DateTimeFormatter dayMonthYearFormat = 
         DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    
     private final static DateTimeFormatter yearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
@@ -58,13 +53,17 @@ public final class FamilyTreeStatsCalculator
         for (Map<String, String> map : results)
         {
             // Retrieve and parse values
-            final LocalDate marriageDate = dateStringToDate(map.get(ColumnMarriageDate), yearMonthDayFormat);
-            final LocalDate birthDate = dateStringToDate(map.get(ColumnBirthDate), dayMonthYearFormat);
-            final Relationship relationshipType = relationshipStringToEnum(map.get(ColumnRelationshipType));
-            final LocalDate deathDate = dateStringToDate(map.get(ColumnDeathDate), dayMonthYearFormat);
-            final int id = idStringToInt(map.get(ColumnId));
-            final int fatherId = idStringToInt(map.get(ColumnFatherId));
-            final int motherId = idStringToInt(map.get(ColumnMotherId));
+            final LocalDate marriageDate = dateStringToDate(map.get(
+                    Column.DateMarriage.getColumnName()), yearMonthDayFormat);
+            final LocalDate birthDate = dateStringToDate(map.get(
+                    Column.DateBirth.getColumnName()), dayMonthYearFormat);
+            final Relationship relationshipType = relationshipStringToEnum(map.get(
+                    Column.TypeRelationship.getColumnName()));
+            final LocalDate deathDate = dateStringToDate(map.get(
+                    Column.DateDeath.getColumnName()), dayMonthYearFormat);
+            final int id = idStringToInt(map.get(Column.IdSelf.getColumnName()));
+            final int fatherId = idStringToInt(map.get(Column.IdFather.getColumnName()));
+            final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
             
             // Use entry for average age at marriage if birthDate and marriageDate are not null,
             // and relationshipType is 'Marriage'.
