@@ -40,16 +40,16 @@ public final class FamilyTreeStatsCalculator
      * persons list to calculate several statistics, returned in a Statistics
      * object.
      * 
-     * @param filepath the path to the persons CSV-file
+     * @param file the persons CSV-file
      * @return the calculated statistics
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
      */
-    public static Statistics calculate(String filepath) throws IOException
+    public static Statistics calculate(File file) throws IOException
     {
         // Reset MarriedWithChildren and retrieve data from csv file.
         MarriedWithChildren.clear();
-        final List<Map<String, String>> results = readPersonsFromFile(filepath);
+        final List<Map<String, String>> results = readPersonsFromFile(file);
         
         // Values for calculating the averages           
         long ageAtMarriageBothTotal = 0;
@@ -245,14 +245,13 @@ public final class FamilyTreeStatsCalculator
      * Reads the persons CSV-file found on the specified path, and returns the
      * retrieved persons.
      * 
-     * @param filepath the path to the persons CSV-file
+     * @param file the persons CSV-file
      * @return list of maps, each map holding a person's data
      * @throws IOException if something went wrong while finding/reading the file
      */
-    private static List<Map<String, String>> readPersonsFromFile(String filepath) throws IOException
+    private static List<Map<String, String>> readPersonsFromFile(File file) throws IOException
     {
         final List<Map<String, String>> results = new ArrayList<>();
-        final File file = new File(filepath);
  
         try (final BufferedReader reader = new BufferedReader(new FileReader(file));)
         {
@@ -261,7 +260,7 @@ public final class FamilyTreeStatsCalculator
             // Read column names.
             if ((line = reader.readLine()) == null)
             {
-                throw new IOException("File on path '" + filepath + "' is empty!");
+                throw new IOException("Selected file is empty!");
             }
             
             final String[] columns = line.split(SplitSymbol);
