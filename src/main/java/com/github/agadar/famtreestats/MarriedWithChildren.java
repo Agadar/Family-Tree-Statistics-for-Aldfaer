@@ -6,54 +6,64 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Represents a married couple with children.
+ * 
  * @author Agadar <https://github.com/Agadar/>
  */
 public final class MarriedWithChildren 
 {
-    private final static Map<Integer, MarriedWithChildren> map = new HashMap<>();
+    private final static Map<Integer, Tuple<Integer, Integer>> Couples = new HashMap<>();
+    private final static Map<Tuple<Integer, Integer>, List<Integer>> ParentsWithChildren = new HashMap<>();
     
-    public static void register(int relationshipId, int partnerId)
+    public static void registerChild(int childId, int parent1Id, int parent2Id)
     {
-        MarriedWithChildren mwc = map.get(relationshipId);
+        final Tuple<Integer, Integer> parents = new Tuple(parent1Id, parent2Id);
+        List<Integer> children = ParentsWithChildren.get(parents);
         
-        if (mwc == null)
+        if (children == null)
         {
-            map.put(relationshipId, new MarriedWithChildren(relationshipId, partnerId));
+            children = new ArrayList<>();
+            children.add(childId);
+            ParentsWithChildren.put(parents, children);
         }
         else
         {
-            mwc.setPartner2Id(partnerId);
+            if (!children.contains(childId))
+            {
+                children.add(childId);
+            }
         }
     }
     
-    public final int RelationshipId;
-    public final int Partner1Id;
-    private int Partner2Id = -1;
-
-    private MarriedWithChildren(int relationshipId, int partner1Id)
+    public static void registerCouple(int relationId, int partner1Id, int partner2Id)
     {
-        this.RelationshipId = relationshipId;
-        this.Partner1Id = partner1Id;
-    }
-
-    private void setPartner2Id(int partner2Id)
-    {
-        if (Partner1Id != partner2Id && Partner2Id == -1)
+        if (!Couples.containsKey(relationId))
         {
-            Partner2Id = partner2Id;
+            Couples.put(relationId, new Tuple(partner1Id, partner2Id));
         }
     }
-
-    public int getPartner2Id()
+    
+    public static float averageNumberOfChildren()
     {
-        return Partner2Id;
+        int totalChildren = 0;
+        
+        for (Map.Entry<Integer, Tuple<Integer, Integer>> coupleEntry : Couples.entrySet())
+        {
+            final Tuple<Integer, Integer> couple = coupleEntry.getValue();
+            final List<Integer> children = ParentsWithChildren.getOrDefault(couple, new ArrayList<>());
+            totalChildren += children.size();
+            if (children.size() > 0)
+                System.out.println(children.size());
+        }
+        
+        System.out.println(ParentsWithChildren.size());
+        System.out.println(Couples.size());
+        return (float) totalChildren / (float) Couples.size();
     }
     
-    public static List<MarriedWithChildren> allAsList()
+    public static void clear()
     {
-        return new ArrayList(map.values());
+        Couples.clear();
+        ParentsWithChildren.clear();
     }
-    
-    
 }

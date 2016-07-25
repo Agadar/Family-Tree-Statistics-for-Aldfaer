@@ -1,8 +1,8 @@
 package com.github.agadar.famtreestats;
 
-import com.github.agadar.famtreestats.enums.Relationship;
-import com.github.agadar.famtreestats.enums.Sex;
 import com.github.agadar.famtreestats.enums.Column;
+import com.github.agadar.famtreestats.enums.RelationType;
+import com.github.agadar.famtreestats.enums.Sex;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -27,11 +27,11 @@ public final class FamilyTreeStatsCalculator
     private final static String SplitSymbol = ";";
 
     /** Date formatter for dd-MM-yyyy. */
-    private final static DateTimeFormatter dayMonthYearFormat = 
+    private final static DateTimeFormatter DayMonthYearFormat = 
         DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     /** Date formatter for yyyy-MM-dd. */
-    private final static DateTimeFormatter yearMonthDayFormat = 
+    private final static DateTimeFormatter YearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
     /**
@@ -46,7 +46,8 @@ public final class FamilyTreeStatsCalculator
      */
     public static Statistics calculate(String filepath) throws IOException
     {
-        // Retrieve data from csv file.
+        // Reset MarriedWithChildren and retrieve data from csv file.
+        MarriedWithChildren.clear();
         final List<Map<String, String>> results = readPersonsFromFile(filepath);
         
         // Values for calculating the averages           
@@ -61,30 +62,31 @@ public final class FamilyTreeStatsCalculator
         long ageAtDeathMaleTotal = 0;
         int ageAtDeathMaleDivBy = 0;
         long ageAtDeathFemaleTotal = 0;
-        int ageAtDeathFemaleDivBy = 0;
-        
+        int ageAtDeathFemaleDivBy = 0;       
             
         // Iterate over retrieved data.
         for (Map<String, String> map : results)
         {
             // Retrieve and parse values
             final LocalDate marriageDate = dateStringToDate(map.get(
-                    Column.DateMarriage.getColumnName()), yearMonthDayFormat);
+                    Column.DateMarriage.getColumnName()), YearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(
-                    Column.DateBirth.getColumnName()), dayMonthYearFormat);
+                    Column.DateBirth.getColumnName()), DayMonthYearFormat);
             final LocalDate deathDate = dateStringToDate(map.get(
-                    Column.DateDeath.getColumnName()), dayMonthYearFormat);
-            final Relationship relationshipType = relationshipStringToEnum(map.get(
+                    Column.DateDeath.getColumnName()), DayMonthYearFormat);
+            final RelationType relationshipType = relationshipStringToEnum(map.get(
                     Column.TypeRelationship.getColumnName()));
             final Sex sexType = Sex.getByUnderlyingString(map.get(Column.TypeSex.getColumnName()));
             final int id = idStringToInt(map.get(Column.IdSelf.getColumnName()));
             final int fatherId = idStringToInt(map.get(Column.IdFather.getColumnName()));
             final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
+            final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
+            final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
             
             // Use entry for average age at marriage if birthDate and marriageDate are not null,
             // and relationshipType is 'Marriage'.
             if (birthDate != null && marriageDate != null && 
-                relationshipType == Relationship.Marriage)
+                relationshipType == RelationType.Marriage)
             {
                 ageAtMarriageBothDivBy++;
                 long daysBetween = DAYS.between(birthDate, marriageDate);
@@ -120,6 +122,19 @@ public final class FamilyTreeStatsCalculator
                     ageAtDeathFemaleTotal += daysBetween;
                 }
             }
+            
+            // Register child if both parent id's are known.
+            if (fatherId != -1 && motherId != -1 && id != -1)
+            {
+                MarriedWithChildren.registerChild(id, fatherId, motherId);
+            }
+            
+            // Register couple if relationship id and partner id are known.
+            if (relationId != -1 && partnerId != -1 && id != -1 && 
+                relationshipType == RelationType.Marriage)
+            {
+                MarriedWithChildren.registerCouple(relationId, id, partnerId);
+            }
         }
 
         // Format and return string.
@@ -135,9 +150,10 @@ public final class FamilyTreeStatsCalculator
                                                       ageAtDeathMaleDivBy);
         final int ageAtDeathFemaleResult = averageYears(ageAtDeathFemaleTotal, 
                                                         ageAtDeathFemaleDivBy);
+        final int avgChildrenPerMarriage = (int) (MarriedWithChildren.averageNumberOfChildren() * 100);
         return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
                 ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
-                ageAtDeathFemaleResult, -1);
+                ageAtDeathFemaleResult, avgChildrenPerMarriage);
     }
     
     /**
@@ -213,14 +229,14 @@ public final class FamilyTreeStatsCalculator
      * @param relationshipStr the String to find the corresponding RelationshipType of
      * @return the corresponding RelationshipType, or RelationshipType.Unknown
      */
-    private static Relationship relationshipStringToEnum(String relationshipStr)
+    private static RelationType relationshipStringToEnum(String relationshipStr)
     {
         if (relationshipStr == null)
         {
-            return Relationship.Unknown;
+            return RelationType.Unknown;
         }
 
-        return Relationship.getByUnderlyingString(relationshipStr.trim());
+        return RelationType.getByUnderlyingString(relationshipStr.trim());
     }
     
     /**

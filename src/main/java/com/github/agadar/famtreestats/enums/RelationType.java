@@ -8,7 +8,7 @@ import java.util.Map;
  * 
  * @author Agadar <https://github.com/Agadar/>
  */
-public enum Relationship 
+public enum RelationType 
 {
     PreMarriage("Ondertrouw"),
     Marriage("Huwelijk"),
@@ -23,12 +23,12 @@ public enum Relationship
     private final String UnderlyingString;
     
     /** Map for reverse look-up via the string. */
-    private final static Map<String, Relationship> Reverse = new HashMap<>();
+    private final static Map<String, RelationType> Reverse = new HashMap<>();
     
     /** Static 'constructor' for filling the reverse map. */
     static
     {
-        for (Relationship relationshipType : values())
+        for (RelationType relationshipType : values())
         {
             Reverse.put(relationshipType.UnderlyingString, relationshipType);
         }
@@ -39,7 +39,7 @@ public enum Relationship
      * 
      * @param underlyingString the string
      */
-    private Relationship(String underlyingString) 
+    private RelationType(String underlyingString) 
     {
         this.UnderlyingString = underlyingString;
     }
@@ -61,7 +61,7 @@ public enum Relationship
      * @param string the string
      * @return the RelationshipType mapped to the given string
      */
-    public static Relationship getByUnderlyingString(String string)
+    public static RelationType getByUnderlyingString(String string)
     {
         return Reverse.getOrDefault(string, Relationship.Unknown);
     }
