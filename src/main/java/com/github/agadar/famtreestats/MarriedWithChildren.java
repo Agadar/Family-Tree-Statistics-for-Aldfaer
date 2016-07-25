@@ -1,5 +1,6 @@
 package com.github.agadar.famtreestats;
 
+import com.github.agadar.famtreestats.domain.Tuple;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

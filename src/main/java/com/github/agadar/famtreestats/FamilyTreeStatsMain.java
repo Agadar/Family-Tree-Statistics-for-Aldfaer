@@ -1,5 +1,6 @@
 package com.github.agadar.famtreestats;
 
+import com.github.agadar.famtreestats.domain.Statistics;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 

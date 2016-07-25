@@ -1,4 +1,4 @@
-package com.github.agadar.famtreestats;
+package com.github.agadar.famtreestats.domain;
 
 /**
  * Container for the calculated statistics.

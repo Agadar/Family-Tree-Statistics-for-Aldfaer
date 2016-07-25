@@ -1,5 +1,6 @@
 package com.github.agadar.famtreestats;
 
+import com.github.agadar.famtreestats.domain.Statistics;
 import com.github.agadar.famtreestats.enums.Column;
 import com.github.agadar.famtreestats.enums.RelationType;
 import com.github.agadar.famtreestats.enums.Sex;
