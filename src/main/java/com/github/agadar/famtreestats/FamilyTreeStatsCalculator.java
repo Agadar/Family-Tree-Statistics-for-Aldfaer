@@ -131,7 +131,8 @@ public final class FamilyTreeStatsCalculator
             
             // Register couple if relationship id and partner id are known.
             if (relationId != -1 && partnerId != -1 && id != -1 && 
-                relationshipType == RelationType.Marriage)
+                (relationshipType == RelationType.Marriage ||
+                 relationshipType == RelationType.RegisteredPartnership))
             {
                 MarriedWithChildren.registerCouple(relationId, id, partnerId);
             }
