@@ -6,15 +6,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a married couple with children.
+ * Helper for calculating the number of children per marriage.
  * 
  * @author Agadar <https://github.com/Agadar/>
  */
 public final class MarriedWithChildren 
 {
+    /** Partners id's mapped to relation id's. */
     private final static Map<Integer, Tuple<Integer, Integer>> Couples = new HashMap<>();
+    
+    /** Children id's mapped to parents' id's. */
     private final static Map<Tuple<Integer, Integer>, List<Integer>> ParentsWithChildren = new HashMap<>();
     
+    /**
+     * Registers a child id to two parent id's, but only if the child id isn't
+     * already registered to the parents id's.
+     * 
+     * @param childId id of the child
+     * @param parent1Id id of one of the parents
+     * @param parent2Id id of the other parent
+     */
     public static void registerChild(int childId, int parent1Id, int parent2Id)
     {
         final Tuple<Integer, Integer> parents = new Tuple(parent1Id, parent2Id);
@@ -35,6 +46,13 @@ public final class MarriedWithChildren
         }
     }
     
+    /**
+     * Registers a married couple, but only if the relation id isn't already registered.
+     * 
+     * @param relationId id of the relationship
+     * @param partner1Id id of one of the partners
+     * @param partner2Id id of the other partner
+     */
     public static void registerCouple(int relationId, int partner1Id, int partner2Id)
     {
         if (!Couples.containsKey(relationId))
@@ -43,7 +61,12 @@ public final class MarriedWithChildren
         }
     }
     
-    public static float averageNumberOfChildren()
+    /**
+     * Gives the average number of children per marriage.
+     * 
+     * @return the average number of children per marriage
+     */
+    public static int averageNumberOfChildren()
     {
         int totalChildren = 0;
         
@@ -52,15 +75,14 @@ public final class MarriedWithChildren
             final Tuple<Integer, Integer> couple = coupleEntry.getValue();
             final List<Integer> children = ParentsWithChildren.getOrDefault(couple, new ArrayList<>());
             totalChildren += children.size();
-            if (children.size() > 0)
-                System.out.println(children.size());
         }
-        
-        System.out.println(ParentsWithChildren.size());
-        System.out.println(Couples.size());
-        return (float) totalChildren / (float) Couples.size();
+
+        return Math.round((float) totalChildren / (float) Couples.size());
     }
     
+    /**
+     * Clears the helper's data.
+     */
     public static void clear()
     {
         Couples.clear();

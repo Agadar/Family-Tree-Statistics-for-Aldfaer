@@ -151,7 +151,7 @@ public final class FamilyTreeStatsCalculator
                                                       ageAtDeathMaleDivBy);
         final int ageAtDeathFemaleResult = averageYears(ageAtDeathFemaleTotal, 
                                                         ageAtDeathFemaleDivBy);
-        final int avgChildrenPerMarriage = (int) (MarriedWithChildren.averageNumberOfChildren() * 100);
+        final int avgChildrenPerMarriage = MarriedWithChildren.averageNumberOfChildren();
         return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
                 ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
                 ageAtDeathFemaleResult, avgChildrenPerMarriage);
