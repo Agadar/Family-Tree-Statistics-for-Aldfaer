@@ -1,5 +1,8 @@
 package com.github.agadar.famtreestats;
 
+import com.github.agadar.famtreestats.enums.Relationship;
+import com.github.agadar.famtreestats.enums.Sex;
+import com.github.agadar.famtreestats.enums.Column;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -59,6 +62,7 @@ public final class FamilyTreeStatsCalculator
         int ageAtDeathMaleDivBy = 0;
         long ageAtDeathFemaleTotal = 0;
         int ageAtDeathFemaleDivBy = 0;
+        
             
         // Iterate over retrieved data.
         for (Map<String, String> map : results)

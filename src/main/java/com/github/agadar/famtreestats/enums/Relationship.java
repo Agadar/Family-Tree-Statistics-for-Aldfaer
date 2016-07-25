@@ -1,4 +1,4 @@
-package com.github.agadar.famtreestats;
+package com.github.agadar.famtreestats.enums;
 
 import java.util.HashMap;
 import java.util.Map;

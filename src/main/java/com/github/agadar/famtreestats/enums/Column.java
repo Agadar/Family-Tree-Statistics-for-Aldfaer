@@ -1,4 +1,4 @@
-package com.github.agadar.famtreestats;
+package com.github.agadar.famtreestats.enums;
 
 /**
  * Enumerator for mapping column names from the persons CSV files.
@@ -14,7 +14,9 @@ public enum Column
     TypeSex("Geslacht"),
     IdSelf("Intern_nummer"),
     IdFather("ID_vader"),
-    IdMother("ID_moeder");
+    IdMother("ID_moeder"),
+    IdRelationship("RelatieID"),
+    IdPartner("PartnerID");
     
     /** The column name. */
     private final String ColumnName;
