@@ -132,7 +132,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             {
                 // Read from the file and do calculations.
                 File file = fileChooser.getSelectedFile();
-                Statistics stats = FamilyTreeStatsCalculator.calculate(file);
+                Statistics stats = new FamilyTreeStatsCalculator().calculate(file);
                 
                 // Print the results in the text area.
                 String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,

@@ -35,6 +35,23 @@ public final class FamilyTreeStatsCalculator
     private final static DateTimeFormatter YearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
+    /** This calculator's MarriedWithChildren helper. */
+    private final MarriedWithChildren Mwc = new MarriedWithChildren();
+    
+    // Values for calculating the averages           
+    private long ageAtMarriageBothTotal = 0;
+    private int ageAtMarriageBothDivBy = 0;
+    private long ageAtMarriageMaleTotal = 0;
+    private int ageAtMarriageMaleDivBy = 0;
+    private long ageAtMarriageFemaleTotal = 0;
+    private int ageAtMarriageFemaleDivBy = 0;      
+    private long ageAtDeathBothTotal = 0;
+    private int ageAtDeathBothDivBy = 0;
+    private long ageAtDeathMaleTotal = 0;
+    private int ageAtDeathMaleDivBy = 0;
+    private long ageAtDeathFemaleTotal = 0;
+    private int ageAtDeathFemaleDivBy = 0; 
+    
     /**
      * Reads the persons CSV-file found on the specified path, and uses these
      * persons list to calculate several statistics, returned in a Statistics
@@ -45,37 +62,22 @@ public final class FamilyTreeStatsCalculator
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
      */
-    public static Statistics calculate(File file) throws IOException
+    public Statistics calculate(File file) throws IOException
     {
-        // Reset MarriedWithChildren and retrieve data from csv file.
-        MarriedWithChildren.clear();
-        final List<Map<String, String>> results = readPersonsFromFile(file);
-        
-        // Values for calculating the averages           
-        long ageAtMarriageBothTotal = 0;
-        int ageAtMarriageBothDivBy = 0;
-        long ageAtMarriageMaleTotal = 0;
-        int ageAtMarriageMaleDivBy = 0;
-        long ageAtMarriageFemaleTotal = 0;
-        int ageAtMarriageFemaleDivBy = 0;      
-        long ageAtDeathBothTotal = 0;
-        int ageAtDeathBothDivBy = 0;
-        long ageAtDeathMaleTotal = 0;
-        int ageAtDeathMaleDivBy = 0;
-        long ageAtDeathFemaleTotal = 0;
-        int ageAtDeathFemaleDivBy = 0;       
+        // Retrieve data from csv file.       
+        final List<Map<String, String>> results = readPersonsFromFile(file);    
             
         // Iterate over retrieved data.
         for (Map<String, String> map : results)
         {
-            // Retrieve and parse values
+            // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
                     Column.DateMarriage.getColumnName()), YearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(
                     Column.DateBirth.getColumnName()), DayMonthYearFormat);
             final LocalDate deathDate = dateStringToDate(map.get(
                     Column.DateDeath.getColumnName()), DayMonthYearFormat);
-            final RelationType relationshipType = relationshipStringToEnum(map.get(
+            final RelationType relationType = relationshipStringToEnum(map.get(
                     Column.TypeRelationship.getColumnName()));
             final Sex sexType = Sex.getByUnderlyingString(map.get(Column.TypeSex.getColumnName()));
             final int id = idStringToInt(map.get(Column.IdSelf.getColumnName()));
@@ -84,59 +86,11 @@ public final class FamilyTreeStatsCalculator
             final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
             final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
             
-            // Use entry for average age at marriage if birthDate and marriageDate are not null,
-            // and relationshipType is 'Marriage'.
-            if (birthDate != null && marriageDate != null && 
-                relationshipType == RelationType.Marriage)
-            {
-                ageAtMarriageBothDivBy++;
-                long daysBetween = DAYS.between(birthDate, marriageDate);
-                ageAtMarriageBothTotal += daysBetween;
-                
-                if (sexType == Sex.Male)
-                {
-                    ageAtMarriageMaleDivBy++;
-                    ageAtMarriageMaleTotal += daysBetween;
-                }
-                else if (sexType == Sex.Female)
-                {
-                    ageAtMarriageFemaleDivBy++;
-                    ageAtMarriageFemaleTotal += daysBetween;
-                }
-            }
-            
-            // Use entry for average age at death if birthDate and deathDate are not null.
-            if (birthDate != null && deathDate != null)
-            {
-                ageAtDeathBothDivBy++;
-                long daysBetween = DAYS.between(birthDate, deathDate);
-                ageAtDeathBothTotal += daysBetween;
-                
-                if (sexType == Sex.Male)
-                {
-                    ageAtDeathMaleDivBy++;
-                    ageAtDeathMaleTotal += daysBetween;
-                }
-                else if (sexType == Sex.Female)
-                {
-                    ageAtDeathFemaleDivBy++;
-                    ageAtDeathFemaleTotal += daysBetween;
-                }
-            }
-            
-            // Register child if both parent id's are known.
-            if (fatherId != -1 && motherId != -1 && id != -1)
-            {
-                MarriedWithChildren.registerChild(id, fatherId, motherId);
-            }
-            
-            // Register couple if relationship id and partner id are known.
-            if (relationId != -1 && partnerId != -1 && id != -1 && 
-                (relationshipType == RelationType.Marriage ||
-                 relationshipType == RelationType.RegisteredPartnership))
-            {
-                MarriedWithChildren.registerCouple(relationId, id, partnerId);
-            }
+            // Process retrieved values.
+            processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
+            processAgeAtDeath(birthDate, deathDate, sexType);           
+            processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
+                relationType);           
         }
 
         // Format and return string.
@@ -152,10 +106,103 @@ public final class FamilyTreeStatsCalculator
                                                       ageAtDeathMaleDivBy);
         final int ageAtDeathFemaleResult = averageYears(ageAtDeathFemaleTotal, 
                                                         ageAtDeathFemaleDivBy);
-        final int avgChildrenPerMarriage = MarriedWithChildren.averageNumberOfChildren();
+        final int avgChildrenPerMarriage = Mwc.averageNumberOfChildren();
         return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
                 ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
                 ageAtDeathFemaleResult, avgChildrenPerMarriage);
+    }
+    
+    /**
+     * Processes a person's data, using it to calculate the average ages at marriage.
+     * 
+     * @param birthDate person's birth date
+     * @param marriageDate person's marriage date
+     * @param relationType person's relationship type
+     * @param sexType person's sex type
+     */
+    private void processAgeAtMarriage(LocalDate birthDate, LocalDate marriageDate, 
+            RelationType relationType, Sex sexType)
+    {
+        if (birthDate == null || marriageDate == null || 
+                !(relationType == RelationType.Marriage || 
+                    relationType == RelationType.RegisteredPartnership))
+        {
+            return;
+        }
+        
+        ageAtMarriageBothDivBy++;
+        final long daysBetween = DAYS.between(birthDate, marriageDate);
+        ageAtMarriageBothTotal += daysBetween;
+
+        if (sexType == Sex.Male)
+        {
+            ageAtMarriageMaleDivBy++;
+            ageAtMarriageMaleTotal += daysBetween;
+        }
+        else if (sexType == Sex.Female)
+        {
+            ageAtMarriageFemaleDivBy++;
+            ageAtMarriageFemaleTotal += daysBetween;
+        }
+    }
+    
+    /**
+     * Processes a person's data, using it to calculate the average ages at death.
+     * 
+     * @param birthDate person's birth date
+     * @param deathDate person's death date
+     * @param sexType person's sex type
+     */
+    private void processAgeAtDeath(LocalDate birthDate, LocalDate deathDate, Sex sexType)
+    {
+        if (birthDate == null || deathDate == null)
+        {
+            return;
+        }
+            
+        ageAtDeathBothDivBy++;
+        final long daysBetween = DAYS.between(birthDate, deathDate);
+        ageAtDeathBothTotal += daysBetween;
+
+        if (sexType == Sex.Male)
+        {
+            ageAtDeathMaleDivBy++;
+            ageAtDeathMaleTotal += daysBetween;
+        }
+        else if (sexType == Sex.Female)
+        {
+            ageAtDeathFemaleDivBy++;
+            ageAtDeathFemaleTotal += daysBetween;
+        }           
+    }
+    
+    /**
+     * Processes a person's data, using it to calculate the average number of
+     * children per marriage.
+     * 
+     * @param id person's id
+     * @param fatherId person's father's id
+     * @param motherId person's mother's id
+     * @param relationId person's relation id
+     * @param partnerId person's partner's id
+     * @param relationType type of the relation
+     */
+    private void processChildrenAtMarriage(int id, int fatherId, int motherId,
+            int relationId, int partnerId, RelationType relationType)
+    {
+        // Register child if both parent id's are known.
+        if (fatherId != -1 && motherId != -1 && id != -1)
+        {
+            Mwc.registerChild(id, fatherId, motherId);
+        }
+
+        // Register couple if relationship id and partner id are known.
+        if (relationId != -1 && partnerId != -1 && id != -1 && 
+            (relationType == RelationType.Marriage ||
+             relationType == RelationType.RegisteredPartnership))
+        {
+            Mwc.registerCouple(relationId, id, partnerId);
+        }
     }
     
     /**

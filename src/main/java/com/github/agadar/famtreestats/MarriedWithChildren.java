@@ -14,10 +14,10 @@ import java.util.Map;
 public final class MarriedWithChildren 
 {
     /** Partners id's mapped to relation id's. */
-    private final static Map<Integer, Tuple<Integer, Integer>> Couples = new HashMap<>();
+    private final Map<Integer, Tuple<Integer, Integer>> Couples = new HashMap<>();
     
     /** Children id's mapped to parents' id's. */
-    private final static Map<Tuple<Integer, Integer>, List<Integer>> ParentsWithChildren = new HashMap<>();
+    private final Map<Tuple<Integer, Integer>, List<Integer>> ParentsWithChildren = new HashMap<>();
     
     /**
      * Registers a child id to two parent id's, but only if the child id isn't
@@ -27,7 +27,7 @@ public final class MarriedWithChildren
      * @param parent1Id id of one of the parents
      * @param parent2Id id of the other parent
      */
-    public static void registerChild(int childId, int parent1Id, int parent2Id)
+    public void registerChild(int childId, int parent1Id, int parent2Id)
     {
         final Tuple<Integer, Integer> parents = new Tuple(parent1Id, parent2Id);
         List<Integer> children = ParentsWithChildren.get(parents);
@@ -54,7 +54,7 @@ public final class MarriedWithChildren
      * @param partner1Id id of one of the partners
      * @param partner2Id id of the other partner
      */
-    public static void registerCouple(int relationId, int partner1Id, int partner2Id)
+    public void registerCouple(int relationId, int partner1Id, int partner2Id)
     {
         if (!Couples.containsKey(relationId))
         {
@@ -67,7 +67,7 @@ public final class MarriedWithChildren
      * 
      * @return the average number of children per marriage
      */
-    public static int averageNumberOfChildren()
+    public int averageNumberOfChildren()
     {
         int totalChildren = 0;
         
@@ -79,14 +79,5 @@ public final class MarriedWithChildren
         }
 
         return Math.round((float) totalChildren / (float) Couples.size());
-    }
-    
-    /**
-     * Clears the helper's data.
-     */
-    public static void clear()
-    {
-        Couples.clear();
-        ParentsWithChildren.clear();
     }
 }
