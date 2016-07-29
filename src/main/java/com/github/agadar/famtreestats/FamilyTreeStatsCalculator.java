@@ -58,21 +58,23 @@ public final class FamilyTreeStatsCalculator
      * object.
      * 
      * @param file the persons CSV-file
+     * @param yearFrom
+     * @param yearTo
      * @return the calculated statistics
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
      */
-    public Statistics calculate(File file) throws IOException
+    public Statistics calculate(File file, int yearFrom, int yearTo) throws IOException
     {
         // Retrieve data from csv file.       
         final List<Map<String, String>> results = readPersonsFromFile(file);    
-            
+
         // Iterate over retrieved data.
         for (Map<String, String> map : results)
         {
             // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
-                    Column.DateMarriage.getColumnName()), YearMonthDayFormat);
+                    Column.DateMarriage.getColumnName()), DayMonthYearFormat);//YearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(
                     Column.DateBirth.getColumnName()), DayMonthYearFormat);
             final LocalDate deathDate = dateStringToDate(map.get(
@@ -85,12 +87,28 @@ public final class FamilyTreeStatsCalculator
             final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
             final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
             final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
+
+            // Process retrieved values, if they are between the given years.
+            if (marriageDate != null && marriageDate.getYear() >= yearFrom && 
+                marriageDate.getYear() <= yearTo)
+            {       
+                processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
+                    relationType);
+                processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
+            }
+            else
+            {
+                if (relationType == RelationType.Marriage)
+                {
+                    System.out.println("Married but no marriage date! Id: " + id);
+                }
+            }
             
-            // Process retrieved values.
-            processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
-            processAgeAtDeath(birthDate, deathDate, sexType);           
-            processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
-                relationType);           
+            if (deathDate != null && deathDate.getYear() >= yearFrom && 
+                deathDate.getYear() <= yearTo)
+            {
+                processAgeAtDeath(birthDate, deathDate, sexType);
+            }
         }
 
         // Format and return string.

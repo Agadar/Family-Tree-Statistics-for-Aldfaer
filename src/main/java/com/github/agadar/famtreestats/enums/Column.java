@@ -7,7 +7,7 @@ package com.github.agadar.famtreestats.enums;
  */
 public enum Column 
 {
-    DateMarriage("TR_sortdatum"),
+    DateMarriage("datum"),//TR_sortdatum"),
     DateBirth("Geboorte"),
     DateDeath("Overlijden"),
     TypeRelationship("huw.type"),

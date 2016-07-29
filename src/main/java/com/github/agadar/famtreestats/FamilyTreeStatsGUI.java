@@ -173,11 +173,14 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             try 
             {
                 // Read from the file and do calculations.
-                File file = fileChooser.getSelectedFile();
-                Statistics stats = new FamilyTreeStatsCalculator().calculate(file);
+                final File file = fileChooser.getSelectedFile();
+                final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
+                final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
+                final Statistics stats = new FamilyTreeStatsCalculator()
+                        .calculate(file, yearFrom, yearTo);
                 
                 // Print the results in the text area.
-                String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
+                final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
                     stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
                     stats.AgeAtDeathBoth, stats.AgeAtDeathMale, stats.AgeAtDeathFemale,
                     stats.ChildenPerMarriage);

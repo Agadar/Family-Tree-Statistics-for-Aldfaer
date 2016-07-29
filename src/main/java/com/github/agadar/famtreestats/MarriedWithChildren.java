@@ -77,7 +77,7 @@ public final class MarriedWithChildren
             final List<Integer> children = ParentsWithChildren.getOrDefault(couple, new ArrayList<>());
             totalChildren += children.size();
         }
-
+        System.out.println((float) totalChildren / (float) Couples.size());
         return Math.round((float) totalChildren / (float) Couples.size());
     }
 }
