@@ -53,13 +53,29 @@ public final class FamilyTreeStatsCalculator
     private int ageAtDeathFemaleDivBy = 0; 
     
     /**
-     * Reads the persons CSV-file found on the specified path, and uses these
+     * Reads the persons CSV-file found on the specified path, and uses this
      * persons list to calculate several statistics, returned in a Statistics
      * object.
      * 
      * @param file the persons CSV-file
-     * @param yearFrom
-     * @param yearTo
+     * @return the calculated statistics
+     * @throws IOException IOException if something went wrong while 
+     * finding/reading the file
+     */
+    public Statistics calculate(File file) throws IOException
+    {
+        return calculate(file, -1, -1);
+    }
+    
+    /**
+     * Reads the persons CSV-file found on the specified path, and uses this
+     * persons list to calculate several statistics, returned in a Statistics
+     * object. If either yearFrom or yearTo == -1 then those values are ignored,
+     * i.e. ALL persons are processed.
+     * 
+     * @param file the persons CSV-file
+     * @param yearFrom lower bound
+     * @param yearTo upper bound
      * @return the calculated statistics
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
@@ -74,7 +90,7 @@ public final class FamilyTreeStatsCalculator
         {
             // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
-                    Column.DateMarriage.getColumnName()), DayMonthYearFormat);//YearMonthDayFormat);
+                    Column.DateMarriage.getColumnName()), YearMonthDayFormat);
             final LocalDate birthDate = dateStringToDate(map.get(
                     Column.DateBirth.getColumnName()), DayMonthYearFormat);
             final LocalDate deathDate = dateStringToDate(map.get(
@@ -88,24 +104,19 @@ public final class FamilyTreeStatsCalculator
             final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
             final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
 
+            final boolean ignoreDates = yearFrom == -1 || yearTo == -1;
+            
             // Process retrieved values, if they are between the given years.
-            if (marriageDate != null && marriageDate.getYear() >= yearFrom && 
-                marriageDate.getYear() <= yearTo)
+            if (ignoreDates || (marriageDate != null && 
+                marriageDate.getYear() >= yearFrom && marriageDate.getYear() <= yearTo))
             {       
                 processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
                     relationType);
                 processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
             }
-            else
-            {
-                if (relationType == RelationType.Marriage)
-                {
-                    System.out.println("Married but no marriage date! Id: " + id);
-                }
-            }
             
-            if (deathDate != null && deathDate.getYear() >= yearFrom && 
-                deathDate.getYear() <= yearTo)
+            if (ignoreDates || (deathDate != null && 
+                deathDate.getYear() >= yearFrom && deathDate.getYear() <= yearTo))
             {
                 processAgeAtDeath(birthDate, deathDate, sexType);
             }

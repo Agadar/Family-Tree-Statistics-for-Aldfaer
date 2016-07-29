@@ -71,9 +71,10 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         TextFieldFromDate = new javax.swing.JFormattedTextField();
         LabelFromDate = new javax.swing.JLabel();
         LabelDateAnd = new javax.swing.JLabel();
+        ChkBxUseDates = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Family Tree Statistics for Aldfaer 1.0.0");
+        setTitle("Family Tree Statistics for Aldfaer 1.1.0");
         setIconImages(null);
         setName(""); // NOI18N
 
@@ -101,6 +102,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             }
         });
 
+        TextFieldToDate.setEditable(false);
         try
         {
             TextFieldToDate.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("####")));
@@ -110,6 +112,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         }
         TextFieldToDate.setValue(2040);
 
+        TextFieldFromDate.setEditable(false);
         try
         {
             TextFieldFromDate.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("####")));
@@ -123,6 +126,14 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
 
         LabelDateAnd.setText("and");
 
+        ChkBxUseDates.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                ChkBxUseDatesActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -133,6 +144,8 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                     .addComponent(ScrollPaneResults, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
                     .addComponent(LabelLink)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(ChkBxUseDates)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(LabelFromDate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -153,7 +166,8 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                     .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LabelDateAnd)
                     .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtnReadFile))
+                    .addComponent(BtnReadFile)
+                    .addComponent(ChkBxUseDates))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -174,11 +188,20 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             {
                 // Read from the file and do calculations.
                 final File file = fileChooser.getSelectedFile();
-                final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
-                final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
-                final Statistics stats = new FamilyTreeStatsCalculator()
-                        .calculate(file, yearFrom, yearTo);
+                Statistics stats;
                 
+                // Take action depending on the value of the checkbox.
+                if (ChkBxUseDates.isSelected())
+                {
+                    final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
+                    final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
+                    stats = new FamilyTreeStatsCalculator().calculate(file, yearFrom, yearTo);
+                }
+                else
+                {
+                    stats = new FamilyTreeStatsCalculator().calculate(file);
+                }
+
                 // Print the results in the text area.
                 final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
                     stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
@@ -198,6 +221,12 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
     {//GEN-HEADEREND:event_LabelLinkMouseClicked
         tryOpenLink(repositoryLink);
     }//GEN-LAST:event_LabelLinkMouseClicked
+
+    private void ChkBxUseDatesActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ChkBxUseDatesActionPerformed
+    {//GEN-HEADEREND:event_ChkBxUseDatesActionPerformed
+        TextFieldFromDate.setEditable(ChkBxUseDates.isSelected());
+        TextFieldToDate.setEditable(ChkBxUseDates.isSelected());
+    }//GEN-LAST:event_ChkBxUseDatesActionPerformed
 
     /**
      * @param args the command line arguments
@@ -248,6 +277,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton BtnReadFile;
+    private javax.swing.JCheckBox ChkBxUseDates;
     private javax.swing.JLabel LabelDateAnd;
     private javax.swing.JLabel LabelFromDate;
     private javax.swing.JLabel LabelLink;
