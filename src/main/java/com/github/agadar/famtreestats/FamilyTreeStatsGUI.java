@@ -44,6 +44,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
     {
         initComponents();
         this.setLocationRelativeTo(null);
+        BtnReadFile.requestFocusInWindow();
         
         // Set file extension filter.
         FileNameExtensionFilter csvFilter = new FileNameExtensionFilter("CSV file "
@@ -66,13 +67,18 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         ScrollPaneResults = new javax.swing.JScrollPane();
         TextAreaResults = new javax.swing.JTextArea();
         LabelLink = new javax.swing.JLabel();
+        TextFieldToDate = new javax.swing.JFormattedTextField();
+        TextFieldFromDate = new javax.swing.JFormattedTextField();
+        LabelFromDate = new javax.swing.JLabel();
+        LabelDateAnd = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Family Tree Statistics for Aldfaer 1.0.0");
         setIconImages(null);
         setName(""); // NOI18N
 
-        BtnReadFile.setText("Read file");
+        BtnReadFile.setText("Open & read file");
+        BtnReadFile.setFocusPainted(false);
         BtnReadFile.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -95,6 +101,28 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             }
         });
 
+        try
+        {
+            TextFieldToDate.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("####")));
+        } catch (java.text.ParseException ex)
+        {
+            ex.printStackTrace();
+        }
+        TextFieldToDate.setValue(2040);
+
+        try
+        {
+            TextFieldFromDate.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("####")));
+        } catch (java.text.ParseException ex)
+        {
+            ex.printStackTrace();
+        }
+        TextFieldFromDate.setValue(1000);
+
+        LabelFromDate.setText("Between the years:");
+
+        LabelDateAnd.setText("and");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -103,17 +131,31 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPaneResults, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-                    .addComponent(BtnReadFile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(LabelLink))
+                    .addComponent(LabelLink)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(LabelFromDate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(LabelDateAnd)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(BtnReadFile)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(LabelFromDate)
+                    .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(LabelDateAnd)
+                    .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BtnReadFile))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(LabelLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -203,8 +245,12 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton BtnReadFile;
+    private javax.swing.JLabel LabelDateAnd;
+    private javax.swing.JLabel LabelFromDate;
     private javax.swing.JLabel LabelLink;
     private javax.swing.JScrollPane ScrollPaneResults;
     private javax.swing.JTextArea TextAreaResults;
+    private javax.swing.JFormattedTextField TextFieldFromDate;
+    private javax.swing.JFormattedTextField TextFieldToDate;
     // End of variables declaration//GEN-END:variables
 }
