@@ -31,19 +31,26 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="ScrollPaneResults" alignment="1" pref="480" max="32767" attributes="0"/>
-                  <Component id="LabelLink" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="ChkBxUseDates" min="-2" max="-2" attributes="0"/>
+                  <Component id="LabelLink" pref="480" max="32767" attributes="0"/>
+                  <Component id="ScrollPaneResults" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="ChkBxInterval" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="ComboBoxInterval" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="ChkBxUseDates" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="TextFieldFromDate" min="-2" pref="40" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="LabelDateAnd" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="TextFieldToDate" min="-2" pref="40" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="LabelFromDate" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="TextFieldFromDate" min="-2" pref="40" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="LabelDateAnd" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="TextFieldToDate" min="-2" pref="40" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="BtnReadFile" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -55,16 +62,24 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="LabelFromDate" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="TextFieldFromDate" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="LabelDateAnd" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="TextFieldToDate" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="BtnReadFile" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ChkBxUseDates" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="TextFieldFromDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="LabelDateAnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="TextFieldToDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ChkBxUseDates" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="ChkBxInterval" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ComboBoxInterval" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="BtnReadFile" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="ScrollPaneResults" pref="195" max="32767" attributes="0"/>
+              <Component id="ScrollPaneResults" pref="305" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="LabelLink" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -131,20 +146,46 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="LabelFromDate">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Between the years:"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="LabelDateAnd">
       <Properties>
         <Property name="text" type="java.lang.String" value="and"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="ChkBxUseDates">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Between the years:"/>
+      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ChkBxUseDatesActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="ChkBxInterval">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Interval (years):"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ChkBxIntervalActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="ComboBoxInterval">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="9">
+            <StringItem index="0" value="1"/>
+            <StringItem index="1" value="5"/>
+            <StringItem index="2" value="10"/>
+            <StringItem index="3" value="25"/>
+            <StringItem index="4" value="50"/>
+            <StringItem index="5" value="100"/>
+            <StringItem index="6" value="250"/>
+            <StringItem index="7" value="500"/>
+            <StringItem index="8" value="1000"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

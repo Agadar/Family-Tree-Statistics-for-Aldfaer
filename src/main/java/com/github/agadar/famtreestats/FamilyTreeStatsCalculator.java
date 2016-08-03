@@ -50,7 +50,9 @@ public final class FamilyTreeStatsCalculator
     private long ageAtDeathMaleTotal = 0;
     private int ageAtDeathMaleDivBy = 0;
     private long ageAtDeathFemaleTotal = 0;
-    private int ageAtDeathFemaleDivBy = 0; 
+    private int ageAtDeathFemaleDivBy = 0;
+    private int deaths = 0;
+    private int births = 0;
     
     /**
      * Reads the persons CSV-file found on the specified path, and uses this
@@ -106,7 +108,7 @@ public final class FamilyTreeStatsCalculator
 
             final boolean ignoreDates = yearFrom == -1 || yearTo == -1;
             
-            // Process retrieved values, if they are between the given years.
+            // Process avg children at marriate and avg age at marriage.
             if (ignoreDates || (marriageDate != null && 
                 marriageDate.getYear() >= yearFrom && marriageDate.getYear() <= yearTo))
             {       
@@ -115,10 +117,19 @@ public final class FamilyTreeStatsCalculator
                 processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
             }
             
+            // Process avg age at death and number of deaths.
             if (ignoreDates || (deathDate != null && 
                 deathDate.getYear() >= yearFrom && deathDate.getYear() <= yearTo))
             {
                 processAgeAtDeath(birthDate, deathDate, sexType);
+                processDeath(deathDate);
+            }
+            
+            // Process births.
+            if (ignoreDates || (birthDate != null && 
+                birthDate.getYear() >= yearFrom && birthDate.getYear() <= yearTo))
+            {
+                processBirth(birthDate);
             }
         }
 
@@ -138,7 +149,7 @@ public final class FamilyTreeStatsCalculator
         final int avgChildrenPerMarriage = Mwc.averageNumberOfChildren();
         return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
                 ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
-                ageAtDeathFemaleResult, avgChildrenPerMarriage);
+                ageAtDeathFemaleResult, avgChildrenPerMarriage, deaths, births);
     }
     
     /**
@@ -203,6 +214,32 @@ public final class FamilyTreeStatsCalculator
             ageAtDeathFemaleDivBy++;
             ageAtDeathFemaleTotal += daysBetween;
         }           
+    }
+
+    /**
+     * Processes a death date.
+     * 
+     * @param deathDate the death date to process
+     */
+    private void processDeath(LocalDate deathDate)
+    {
+        if (deathDate != null)
+        {
+            deaths++;
+        }
+    }
+    
+    /**
+     * Processes a birth date.
+     * 
+     * @param birthDate the birth date to process
+     */
+    private void processBirth(LocalDate birthDate)
+    {
+        if (birthDate != null)
+        {
+            births++;
+        }
     }
     
     /**

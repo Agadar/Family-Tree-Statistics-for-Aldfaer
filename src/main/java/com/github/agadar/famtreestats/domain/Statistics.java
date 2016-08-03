@@ -27,6 +27,12 @@ public final class Statistics
     
     /** Average number of children per marriage. */
     public final int ChildenPerMarriage;
+    
+    /** Number of births. */
+    public final int Deaths;
+
+    /** Number of deaths. */
+    public final int Births;
 
     /**
      * Instantiates a new Statistics object.
@@ -38,10 +44,12 @@ public final class Statistics
      * @param AgeAtDeathMale average age at death, males
      * @param AgeAtDeathFemale average age at death, females
      * @param ChildenPerMarriage average number of children per marriage
+     * @param Deaths number of deaths
+     * @param Births number of births
      */
     public Statistics(int AgeAtMarriageBoth, int AgeAtMarriageMale,
             int AgeAtMarriageFemale, int AgeAtDeathBoth, int AgeAtDeathMale,
-            int AgeAtDeathFemale, int ChildenPerMarriage)
+            int AgeAtDeathFemale, int ChildenPerMarriage, int Deaths, int Births)
     {
         this.AgeAtMarriageBoth = AgeAtMarriageBoth;
         this.AgeAtMarriageMale = AgeAtMarriageMale;
@@ -50,16 +58,7 @@ public final class Statistics
         this.AgeAtDeathMale = AgeAtDeathMale;
         this.AgeAtDeathFemale = AgeAtDeathFemale;
         this.ChildenPerMarriage = ChildenPerMarriage;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Statistics{" + "AgeAtMarriageBoth=" + AgeAtMarriageBoth +
-               ", AgeAtMarriageMale=" + AgeAtMarriageMale +
-               ", AgeAtMarriageFemale=" + AgeAtMarriageFemale +
-               ", AgeAtDeathBoth=" + AgeAtDeathBoth + ", AgeAtDeathMale=" +
-               AgeAtDeathMale + ", AgeAtDeathFemale=" + AgeAtDeathFemale +
-               ", ChildenPerMarriage=" + ChildenPerMarriage + '}';
+        this.Deaths = Deaths;
+        this.Births = Births;
     }
 }

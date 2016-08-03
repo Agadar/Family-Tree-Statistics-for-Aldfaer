@@ -32,7 +32,9 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             + "Average age when deceased (all): %s years%n"
             + "Average age when deceased (male): %s years%n"
             + "Average age when deceased (female): %s years%n%n"
-            + "Average number of children (married couples): %s";
+            + "Average number of children (married couples): %s%n"
+            + "Deaths: %s%n"
+            + "Births: %s%n";
        
     /** File chooser filter for the open file dialog. */
     private final JFileChooser fileChooser = new JFileChooser();
@@ -69,9 +71,10 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         LabelLink = new javax.swing.JLabel();
         TextFieldToDate = new javax.swing.JFormattedTextField();
         TextFieldFromDate = new javax.swing.JFormattedTextField();
-        LabelFromDate = new javax.swing.JLabel();
         LabelDateAnd = new javax.swing.JLabel();
         ChkBxUseDates = new javax.swing.JCheckBox();
+        ChkBxInterval = new javax.swing.JCheckBox();
+        ComboBoxInterval = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Family Tree Statistics for Aldfaer 1.1.0");
@@ -122,10 +125,9 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         }
         TextFieldFromDate.setValue(1000);
 
-        LabelFromDate.setText("Between the years:");
-
         LabelDateAnd.setText("and");
 
+        ChkBxUseDates.setText("Between the years:");
         ChkBxUseDates.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -134,6 +136,17 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             }
         });
 
+        ChkBxInterval.setText("Interval (years):");
+        ChkBxInterval.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                ChkBxIntervalActionPerformed(evt);
+            }
+        });
+
+        ComboBoxInterval.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "5", "10", "25", "50", "100", "250", "500", "1000" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -141,19 +154,23 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ScrollPaneResults, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-                    .addComponent(LabelLink)
+                    .addComponent(LabelLink, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                    .addComponent(ScrollPaneResults)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(ChkBxUseDates)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ChkBxInterval)
+                                .addGap(18, 18, 18)
+                                .addComponent(ComboBoxInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ChkBxUseDates)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(LabelDateAnd)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(LabelFromDate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(LabelDateAnd)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
                         .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -161,15 +178,20 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(LabelFromDate)
-                    .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(LabelDateAnd)
-                    .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtnReadFile)
-                    .addComponent(ChkBxUseDates))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(LabelDateAnd)
+                            .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ChkBxUseDates))
+                        .addGap(5, 5, 5)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ChkBxInterval)
+                            .addComponent(ComboBoxInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(LabelLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -206,7 +228,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                 final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
                     stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
                     stats.AgeAtDeathBoth, stats.AgeAtDeathMale, stats.AgeAtDeathFemale,
-                    stats.ChildenPerMarriage);
+                    stats.ChildenPerMarriage, stats.Deaths, stats.Births);
                 TextAreaResults.setText(statsText);
             }
             catch (IOException ex) 
@@ -227,6 +249,11 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         TextFieldFromDate.setEditable(ChkBxUseDates.isSelected());
         TextFieldToDate.setEditable(ChkBxUseDates.isSelected());
     }//GEN-LAST:event_ChkBxUseDatesActionPerformed
+
+    private void ChkBxIntervalActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ChkBxIntervalActionPerformed
+    {//GEN-HEADEREND:event_ChkBxIntervalActionPerformed
+        ComboBoxInterval.setEnabled(ChkBxInterval.isSelected());
+    }//GEN-LAST:event_ChkBxIntervalActionPerformed
 
     /**
      * @param args the command line arguments
@@ -277,9 +304,10 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton BtnReadFile;
+    private javax.swing.JCheckBox ChkBxInterval;
     private javax.swing.JCheckBox ChkBxUseDates;
+    private javax.swing.JComboBox<String> ComboBoxInterval;
     private javax.swing.JLabel LabelDateAnd;
-    private javax.swing.JLabel LabelFromDate;
     private javax.swing.JLabel LabelLink;
     private javax.swing.JScrollPane ScrollPaneResults;
     private javax.swing.JTextArea TextAreaResults;
