@@ -1,5 +1,7 @@
 package com.github.agadar.famtreestats;
 
+import com.github.agadar.famtreestats.domain.Cache;
+import com.github.agadar.famtreestats.domain.PeriodYears;
 import com.github.agadar.famtreestats.domain.Statistics;
 import com.github.agadar.famtreestats.enums.Column;
 import com.github.agadar.famtreestats.enums.RelationType;
@@ -11,17 +13,12 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import static java.time.temporal.ChronoUnit.DAYS;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
-/**
- * The class responsible for calculating the family tree statistics.
- * 
- * @author Agadar <https://github.com/Agadar/>
- */
 public final class FamilyTreeStatsCalculator 
 {
     /** Symbol used for splitting values in persons CSV file. */
@@ -35,60 +32,75 @@ public final class FamilyTreeStatsCalculator
     private final static DateTimeFormatter YearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
-    /** This calculator's MarriedWithChildren helper. */
-    private final MarriedWithChildren Mwc = new MarriedWithChildren();
-    
-    // Values for calculating the averages           
-    private long ageAtMarriageBothTotal = 0;
-    private int ageAtMarriageBothDivBy = 0;
-    private long ageAtMarriageMaleTotal = 0;
-    private int ageAtMarriageMaleDivBy = 0;
-    private long ageAtMarriageFemaleTotal = 0;
-    private int ageAtMarriageFemaleDivBy = 0;      
-    private long ageAtDeathBothTotal = 0;
-    private int ageAtDeathBothDivBy = 0;
-    private long ageAtDeathMaleTotal = 0;
-    private int ageAtDeathMaleDivBy = 0;
-    private long ageAtDeathFemaleTotal = 0;
-    private int ageAtDeathFemaleDivBy = 0;
-    private int deaths = 0;
-    private int births = 0;
-    
     /**
      * Reads the persons CSV-file found on the specified path, and uses this
-     * persons list to calculate several statistics, returned in a Statistics
-     * object.
-     * 
-     * @param file the persons CSV-file
-     * @return the calculated statistics
-     * @throws IOException IOException if something went wrong while 
-     * finding/reading the file
-     */
-    public Statistics calculate(File file) throws IOException
-    {
-        return calculate(file, -1, -1);
-    }
-    
-    /**
-     * Reads the persons CSV-file found on the specified path, and uses this
-     * persons list to calculate several statistics, returned in a Statistics
-     * object. If either yearFrom or yearTo == -1 then those values are ignored,
-     * i.e. ALL persons are processed.
+     * persons list to calculate several statistics, returned in a set. If either 
+     * yearFrom or yearTo == -1 then those values are ignored. If interval == -1 
+     * then the value is ignored.
      * 
      * @param file the persons CSV-file
      * @param yearFrom lower bound
      * @param yearTo upper bound
-     * @return the calculated statistics
+     * @param interval the interval (in years)
+     * @return the calculated statistics, mapped to years
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
      */
-    public Statistics calculate(File file, int yearFrom, int yearTo) throws IOException
+    public List<Statistics> calculate(File file, int yearFrom, int yearTo, int interval) throws IOException
     {
         // Retrieve data from csv file.       
-        final List<Map<String, String>> results = readPersonsFromFile(file);    
+        final List<Map<String, String>> csvData = readPersonsFromFile(file);
 
+        // Create cache maps.    
+        final List<Cache> cacheSet = new ArrayList<>();
+        final Map<Integer, Cache> cacheYears = new TreeMap<>();       
+        int curStart = yearFrom;
+        
+        // Add the default cache if yearFrom and/or yearTo are not set.
+        if (yearFrom == -1 || yearTo == -1)
+        {
+            Cache defaultCache = new Cache(null);
+            cacheSet.add(defaultCache);
+            cacheYears.put(null, defaultCache);
+        }
+        
+        // Fill in for the intervals, but only if an interval is set.
+        if (interval != -1)
+        {
+            int curEnd = yearFrom + interval - (yearFrom % interval) - 1;
+            
+            while (curEnd < yearTo)
+            {
+                // Fill cacheSet.
+                final PeriodYears curPeriod = new PeriodYears(curStart, curEnd);
+                final Cache cache = new Cache(curPeriod);
+                cacheSet.add(cache);
+
+                // Fill cacheYears.
+                for (int i = curStart; i <= curEnd; i++)
+                {
+                    cacheYears.put(i, cache);
+                }
+
+                // Increment values for next loop.
+                curStart = curEnd + 1;
+                curEnd += interval;
+            }
+        }
+        
+        // Fill cacheSet.
+        final PeriodYears curPeriod = new PeriodYears(curStart, yearTo);
+        final Cache cache = new Cache(curPeriod);
+        cacheSet.add(cache);
+        
+        // Fill cacheYears.
+        for (int i = curStart; i <= yearTo; i++)
+        {
+            cacheYears.put(i, cache);
+        }
+        
         // Iterate over retrieved data.
-        for (Map<String, String> map : results)
+        for (Map<String, String> map : csvData)
         {
             // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
@@ -105,183 +117,72 @@ public final class FamilyTreeStatsCalculator
             final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
             final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
             final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
-
-            final boolean ignoreDates = yearFrom == -1 || yearTo == -1;
             
             // Process avg children at marriate and avg age at marriage.
-            if (ignoreDates || (marriageDate != null && 
-                marriageDate.getYear() >= yearFrom && marriageDate.getYear() <= yearTo))
-            {       
-                processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
-                    relationType);
-                processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
+            if (marriageDate != null)
+            {
+                Cache curCache = cacheYears.get(marriageDate.getYear());
+                if (curCache != null)
+                {
+                    curCache.processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
+                        relationType);
+                    curCache.processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
+                }
+                else
+                {
+                    System.out.println("Cache for marriage date '" + marriageDate + 
+                                       "' Not found! Id: '" + id + "'");
+                }
             }
             
             // Process avg age at death and number of deaths.
-            if (ignoreDates || (deathDate != null && 
-                deathDate.getYear() >= yearFrom && deathDate.getYear() <= yearTo))
+            if (deathDate != null)
             {
-                processAgeAtDeath(birthDate, deathDate, sexType);
-                processDeath(deathDate);
+                Cache curCache = cacheYears.get(deathDate.getYear());
+                if (curCache != null)
+                {
+                    curCache.processAgeAtDeath(birthDate, deathDate, sexType);
+                    curCache.processDeath(deathDate);
+                }
+                else
+                {
+                    System.out.println("Cache for death date '" + deathDate + 
+                                       "' Not found! Id: '" + id + "'");
+                }
             }
             
             // Process births.
-            if (ignoreDates || (birthDate != null && 
-                birthDate.getYear() >= yearFrom && birthDate.getYear() <= yearTo))
+            if (birthDate != null)
             {
-                processBirth(birthDate);
+                Cache curCache = cacheYears.get(birthDate.getYear());
+                if (curCache != null)
+                {
+                    curCache.processBirth(birthDate);
+                }
+                else
+                {
+                    System.out.println("Cache for birth date '" + birthDate + 
+                                       "' Not found! Id: '" + id + "'");
+                }
             }
         }
 
-        // Format and return string.
-        final int ageAtMarriageBothResult = averageYears(ageAtMarriageBothTotal, 
-                                                         ageAtMarriageBothDivBy);
-        final int ageAtMarriageMaleResult = averageYears(ageAtMarriageMaleTotal, 
-                                                         ageAtMarriageMaleDivBy);
-        final int ageAtMarriageFemaleResult = averageYears(ageAtMarriageFemaleTotal, 
-                                                           ageAtMarriageFemaleDivBy);
-        final int ageAtDeathBothResult = averageYears(ageAtDeathBothTotal, 
-                                                      ageAtDeathBothDivBy);
-        final int ageAtDeathMaleResult = averageYears(ageAtDeathMaleTotal, 
-                                                      ageAtDeathMaleDivBy);
-        final int ageAtDeathFemaleResult = averageYears(ageAtDeathFemaleTotal, 
-                                                        ageAtDeathFemaleDivBy);
-        final int avgChildrenPerMarriage = Mwc.averageNumberOfChildren();
-        return new Statistics(ageAtMarriageBothResult, ageAtMarriageMaleResult,
-                ageAtMarriageFemaleResult, ageAtDeathBothResult, ageAtDeathMaleResult,
-                ageAtDeathFemaleResult, avgChildrenPerMarriage, deaths, births);
+        // Calculate statistics from caches and return them.
+        List<Statistics> stats = new ArrayList<>();
+        cacheSet.forEach((curcache) -> stats.add(curcache.calculateStatistics()));
+        return stats;
     }
     
-    /**
-     * Processes a person's data, using it to calculate the average ages at marriage.
-     * 
-     * @param birthDate person's birth date
-     * @param marriageDate person's marriage date
-     * @param relationType person's relationship type
-     * @param sexType person's sex type
-     */
-    private void processAgeAtMarriage(LocalDate birthDate, LocalDate marriageDate, 
-            RelationType relationType, Sex sexType)
+    private static Cache getByLocalDate(Map<Integer, Cache> cache, LocalDate date)
     {
-        if (birthDate == null || marriageDate == null || 
-                !(relationType == RelationType.Marriage || 
-                    relationType == RelationType.RegisteredPartnership))
+        if (date == null)
         {
-            return;
+            return cache.get(null);
+        }       
+        else
+        {
+            return cache.getOrDefault(date.getYear(), cache.get(null));
         }
-        
-        ageAtMarriageBothDivBy++;
-        final long daysBetween = DAYS.between(birthDate, marriageDate);
-        ageAtMarriageBothTotal += daysBetween;
-
-        if (sexType == Sex.Male)
-        {
-            ageAtMarriageMaleDivBy++;
-            ageAtMarriageMaleTotal += daysBetween;
-        }
-        else if (sexType == Sex.Female)
-        {
-            ageAtMarriageFemaleDivBy++;
-            ageAtMarriageFemaleTotal += daysBetween;
-        }
-    }
-    
-    /**
-     * Processes a person's data, using it to calculate the average ages at death.
-     * 
-     * @param birthDate person's birth date
-     * @param deathDate person's death date
-     * @param sexType person's sex type
-     */
-    private void processAgeAtDeath(LocalDate birthDate, LocalDate deathDate, Sex sexType)
-    {
-        if (birthDate == null || deathDate == null)
-        {
-            return;
-        }
-            
-        ageAtDeathBothDivBy++;
-        final long daysBetween = DAYS.between(birthDate, deathDate);
-        ageAtDeathBothTotal += daysBetween;
-
-        if (sexType == Sex.Male)
-        {
-            ageAtDeathMaleDivBy++;
-            ageAtDeathMaleTotal += daysBetween;
-        }
-        else if (sexType == Sex.Female)
-        {
-            ageAtDeathFemaleDivBy++;
-            ageAtDeathFemaleTotal += daysBetween;
-        }           
-    }
-
-    /**
-     * Processes a death date.
-     * 
-     * @param deathDate the death date to process
-     */
-    private void processDeath(LocalDate deathDate)
-    {
-        if (deathDate != null)
-        {
-            deaths++;
-        }
-    }
-    
-    /**
-     * Processes a birth date.
-     * 
-     * @param birthDate the birth date to process
-     */
-    private void processBirth(LocalDate birthDate)
-    {
-        if (birthDate != null)
-        {
-            births++;
-        }
-    }
-    
-    /**
-     * Processes a person's data, using it to calculate the average number of
-     * children per marriage.
-     * 
-     * @param id person's id
-     * @param fatherId person's father's id
-     * @param motherId person's mother's id
-     * @param relationId person's relation id
-     * @param partnerId person's partner's id
-     * @param relationType type of the relation
-     */
-    private void processChildrenAtMarriage(int id, int fatherId, int motherId,
-            int relationId, int partnerId, RelationType relationType)
-    {
-        // Register child if both parent id's are known.
-        if (fatherId != -1 && motherId != -1 && id != -1)
-        {
-            Mwc.registerChild(id, fatherId, motherId);
-        }
-
-        // Register couple if relationship id and partner id are known.
-        if (relationId != -1 && partnerId != -1 && id != -1 && 
-            (relationType == RelationType.Marriage ||
-             relationType == RelationType.RegisteredPartnership))
-        {
-            Mwc.registerCouple(relationId, id, partnerId);
-        }
-    }
-    
-    /**
-     * Convenience method for dividing the given days by the given divideBy
-     * and translating it to rounded years.
-     * 
-     * @param total
-     * @param quantity
-     * @return 
-     */
-    private static int averageYears(long days, int divideBy)
-    {
-        return (int) Math.round((double) days / (float) divideBy / 365);
     }
     
     /**

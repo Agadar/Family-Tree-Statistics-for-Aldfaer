@@ -34,9 +34,7 @@ public class Tuple<X, Y>
     @Override
     public int hashCode()
     {
-        // hash = 5 * 59 = 295
-        int hash = 295 + Objects.hashCode(this.x) + Objects.hashCode(this.y);
-        return hash;
+        return 5 * 59 + Objects.hashCode(this.x) + Objects.hashCode(this.y);
     }
 
     @Override
@@ -46,16 +44,19 @@ public class Tuple<X, Y>
         {
             return true;
         }
+        
         if (obj == null)
         {
             return false;
         }
+        
         if (getClass() != obj.getClass())
         {
             return false;
         }
+        
         final Tuple<?, ?> other = (Tuple<?, ?>) obj;
-        return (Objects.equals(this.x, other.x) && Objects.equals(this.y, other.y)
-                || (Objects.equals(this.x, other.y) && Objects.equals(this.y, other.x)));
+        return (Objects.equals(this.x, other.x) && Objects.equals(this.y, other.y))
+                || (Objects.equals(this.x, other.y) && Objects.equals(this.y, other.x));
     }
 }

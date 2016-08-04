@@ -5,7 +5,7 @@ package com.github.agadar.famtreestats.domain;
  * 
  * @author Agadar <https://github.com/Agadar/>
  */
-public final class Statistics 
+public final class Statistics extends PeriodBound
 {
     /** Average age at marriage, both sexes. */
     public final int AgeAtMarriageBoth;
@@ -37,6 +37,8 @@ public final class Statistics
     /**
      * Instantiates a new Statistics object.
      * 
+     * @param YearFrom lower bound of the time period these stats cover (inclusive)
+     * @param YearTo upper bound of the time period these stats cover (inclusive)
      * @param AgeAtMarriageBoth average age at marriage, both sexes
      * @param AgeAtMarriageMale average age at marriage, males
      * @param AgeAtMarriageFemale average age at marriage, females
@@ -47,10 +49,34 @@ public final class Statistics
      * @param Deaths number of deaths
      * @param Births number of births
      */
-    public Statistics(int AgeAtMarriageBoth, int AgeAtMarriageMale,
+    public Statistics(int YearFrom, int YearTo, int AgeAtMarriageBoth, int AgeAtMarriageMale,
             int AgeAtMarriageFemale, int AgeAtDeathBoth, int AgeAtDeathMale,
             int AgeAtDeathFemale, int ChildenPerMarriage, int Deaths, int Births)
     {
+        this(new PeriodYears(YearFrom, YearTo), AgeAtMarriageBoth, AgeAtMarriageMale,
+            AgeAtMarriageFemale, AgeAtDeathBoth, AgeAtDeathMale, AgeAtDeathFemale,
+            ChildenPerMarriage, Deaths, Births);
+    }
+    
+    /**
+     * Instantiates a new Statistics object.
+     * 
+     * @param period the period this covers
+     * @param AgeAtMarriageBoth average age at marriage, both sexes
+     * @param AgeAtMarriageMale average age at marriage, males
+     * @param AgeAtMarriageFemale average age at marriage, females
+     * @param AgeAtDeathBoth average age at death, both sexes
+     * @param AgeAtDeathMale average age at death, males
+     * @param AgeAtDeathFemale average age at death, females
+     * @param ChildenPerMarriage average number of children per marriage
+     * @param Deaths number of deaths
+     * @param Births number of births
+     */
+    public Statistics(PeriodYears period, int AgeAtMarriageBoth, int AgeAtMarriageMale,
+            int AgeAtMarriageFemale, int AgeAtDeathBoth, int AgeAtDeathMale,
+            int AgeAtDeathFemale, int ChildenPerMarriage, int Deaths, int Births)
+    {
+        super(period);
         this.AgeAtMarriageBoth = AgeAtMarriageBoth;
         this.AgeAtMarriageMale = AgeAtMarriageMale;
         this.AgeAtMarriageFemale = AgeAtMarriageFemale;

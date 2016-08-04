@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -210,26 +211,44 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             {
                 // Read from the file and do calculations.
                 final File file = fileChooser.getSelectedFile();
-                Statistics stats;
+                int yearFrom = -1;
+                int yearTo = -1;
+                int interval = -1;
                 
-                // Take action depending on the value of the checkbox.
+                // If we're using dates, assign yearFrom and yearTo.
                 if (ChkBxUseDates.isSelected())
                 {
-                    final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
-                    final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
-                    stats = new FamilyTreeStatsCalculator().calculate(file, yearFrom, yearTo);
+                    yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
+                    yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
                 }
-                else
+                
+                // If we're using an interval, assign interval.
+                if (ChkBxInterval.isSelected())
                 {
-                    stats = new FamilyTreeStatsCalculator().calculate(file);
+                    interval = Integer.valueOf((String) ComboBoxInterval.getSelectedItem());
                 }
 
+                List<Statistics> stats = new FamilyTreeStatsCalculator()
+                        .calculate(file, yearFrom, yearTo, interval);
+                
+                stats.forEach((stat ->  
+                {
+                    String statsText = "Period: " + stat.Period.YearFrom + " to " 
+                                       + stat.Period.YearTo + "\n";
+                    statsText += String.format(statsTextFormat, stat.AgeAtMarriageBoth,
+                        stat.AgeAtMarriageMale, stat.AgeAtMarriageFemale,
+                        stat.AgeAtDeathBoth, stat.AgeAtDeathMale, stat.AgeAtDeathFemale,
+                        stat.ChildenPerMarriage, stat.Deaths, stat.Births);
+                    statsText += "--------------------------------";
+                    System.out.println(statsText);
+                }));
+
                 // Print the results in the text area.
-                final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
-                    stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
-                    stats.AgeAtDeathBoth, stats.AgeAtDeathMale, stats.AgeAtDeathFemale,
-                    stats.ChildenPerMarriage, stats.Deaths, stats.Births);
-                TextAreaResults.setText(statsText);
+//                final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
+//                    stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
+//                    stats.AgeAtDeathBoth, stats.AgeAtDeathMale, stats.AgeAtDeathFemale,
+//                    stats.ChildenPerMarriage, stats.Deaths, stats.Births);
+//                TextAreaResults.setText(statsText);
             }
             catch (IOException ex) 
             {
