@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -211,30 +212,48 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             {
                 // Read from the file and do calculations.
                 final File file = fileChooser.getSelectedFile();
-                int yearFrom = -1;
-                int yearTo = -1;
-                int interval = -1;
+                final FamilyTreeStatsCalculator calc = new FamilyTreeStatsCalculator();
+                List<Statistics> stats;
                 
-                // If we're using dates, assign yearFrom and yearTo.
-                if (ChkBxUseDates.isSelected())
-                {
-                    yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
-                    yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
-                }
-                
-                // If we're using an interval, assign interval.
                 if (ChkBxInterval.isSelected())
                 {
-                    interval = Integer.valueOf((String) ComboBoxInterval.getSelectedItem());
+                    int interval = Integer.valueOf((String) ComboBoxInterval.getSelectedItem());
+                    
+                    if (ChkBxUseDates.isSelected())
+                    {
+                        final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
+                        final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
+                        stats = calc.calculate(file, yearFrom, yearTo, interval);
+                    }
+                    else
+                    {
+                        stats = calc.calculate(file, interval);
+                    }
                 }
-
-                List<Statistics> stats = new FamilyTreeStatsCalculator()
-                        .calculate(file, yearFrom, yearTo, interval);
+                else
+                {
+                    stats = new ArrayList<>();
+                    
+                    if (ChkBxUseDates.isSelected())
+                    {
+                        final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
+                        final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());                        
+                        stats.add(calc.calculate(file, yearFrom, yearTo));
+                    }
+                    else
+                    {
+                        stats.add(calc.calculate(file));
+                    }
+                }
                 
                 stats.forEach((stat ->  
                 {
-                    String statsText = "Period: " + stat.Period.YearFrom + " to " 
+                    String statsText = "";
+                    if (stat.Period != null)
+                    {
+                        statsText += "Period: " + stat.Period.YearFrom + " to " 
                                        + stat.Period.YearTo + "\n";
+                    }
                     statsText += String.format(statsTextFormat, stat.AgeAtMarriageBoth,
                         stat.AgeAtMarriageMale, stat.AgeAtMarriageFemale,
                         stat.AgeAtDeathBoth, stat.AgeAtDeathMale, stat.AgeAtDeathFemale,

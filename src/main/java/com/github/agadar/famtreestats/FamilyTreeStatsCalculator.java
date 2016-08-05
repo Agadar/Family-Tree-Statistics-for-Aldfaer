@@ -32,6 +32,69 @@ public final class FamilyTreeStatsCalculator
     private final static DateTimeFormatter YearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
+    public Statistics calculate(File file) throws IOException
+    {      
+        return calculate(file, 0, 0);
+    }
+    
+    public Statistics calculate(File file, int yearFrom, int yearTo) throws IOException
+    { 
+        final List<Map<String, String>> csvData = readPersonsFromFile(file);        
+        final Cache cache = new Cache(new PeriodYears(yearFrom, yearTo));
+        final boolean ignoreDates = yearFrom < 1 || yearTo < 1;
+        
+        // Iterate over retrieved data.
+        for (Map<String, String> map : csvData)
+        {
+            // Retrieve and parse values.
+            final LocalDate marriageDate = dateStringToDate(map.get(
+                    Column.DateMarriage.getColumnName()), YearMonthDayFormat);
+            final LocalDate birthDate = dateStringToDate(map.get(
+                    Column.DateBirth.getColumnName()), DayMonthYearFormat);
+            final LocalDate deathDate = dateStringToDate(map.get(
+                    Column.DateDeath.getColumnName()), DayMonthYearFormat);
+            final RelationType relationType = relationshipStringToEnum(map.get(
+                    Column.TypeRelationship.getColumnName()));
+            final Sex sexType = Sex.getByUnderlyingString(map.get(Column.TypeSex.getColumnName()));
+            final int id = idStringToInt(map.get(Column.IdSelf.getColumnName()));
+            final int fatherId = idStringToInt(map.get(Column.IdFather.getColumnName()));
+            final int motherId = idStringToInt(map.get(Column.IdMother.getColumnName()));
+            final int relationId = idStringToInt(map.get(Column.IdRelationship.getColumnName()));
+            final int partnerId = idStringToInt(map.get(Column.IdPartner.getColumnName()));
+            
+            // Process avg children at marriate and avg age at marriage.
+            if (ignoreDates || (marriageDate != null && marriageDate.getYear() >= yearFrom &&
+                marriageDate.getYear() <= yearTo))
+            {
+                cache.processChildrenAtMarriage(id, fatherId, motherId, relationId, 
+                    partnerId, relationType);
+                cache.processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
+            }
+            
+            // Process avg age at death and number of deaths.
+            if (ignoreDates || (deathDate != null && deathDate.getYear() >= yearFrom &&
+                deathDate.getYear() <= yearTo))
+            {
+                cache.processAgeAtDeath(birthDate, deathDate, sexType);
+                cache.processDeath(deathDate);
+            }
+            
+            // Process births.
+            if (ignoreDates || (birthDate != null && birthDate.getYear() >= yearFrom &&
+                birthDate.getYear() <= yearTo))
+            {
+                cache.processBirth(birthDate);
+            }
+        }
+        
+        return cache.calculateStatistics();
+    }
+    
+    public List<Statistics> calculate(File file, int interval) throws IOException
+    { 
+        return calculate(file, 1, 2999, interval);
+    }
+    
     /**
      * Reads the persons CSV-file found on the specified path, and uses this
      * persons list to calculate several statistics, returned in a set. If either 
@@ -55,14 +118,6 @@ public final class FamilyTreeStatsCalculator
         final List<Cache> cacheSet = new ArrayList<>();
         final Map<Integer, Cache> cacheYears = new TreeMap<>();       
         int curStart = yearFrom;
-        
-        // Add the default cache if yearFrom and/or yearTo are not set.
-        if (yearFrom == -1 || yearTo == -1)
-        {
-            Cache defaultCache = new Cache(null);
-            cacheSet.add(defaultCache);
-            cacheYears.put(null, defaultCache);
-        }
         
         // Fill in for the intervals, but only if an interval is set.
         if (interval != -1)
@@ -128,11 +183,6 @@ public final class FamilyTreeStatsCalculator
                         relationType);
                     curCache.processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
                 }
-                else
-                {
-                    System.out.println("Cache for marriage date '" + marriageDate + 
-                                       "' Not found! Id: '" + id + "'");
-                }
             }
             
             // Process avg age at death and number of deaths.
@@ -144,11 +194,6 @@ public final class FamilyTreeStatsCalculator
                     curCache.processAgeAtDeath(birthDate, deathDate, sexType);
                     curCache.processDeath(deathDate);
                 }
-                else
-                {
-                    System.out.println("Cache for death date '" + deathDate + 
-                                       "' Not found! Id: '" + id + "'");
-                }
             }
             
             // Process births.
@@ -159,11 +204,6 @@ public final class FamilyTreeStatsCalculator
                 {
                     curCache.processBirth(birthDate);
                 }
-                else
-                {
-                    System.out.println("Cache for birth date '" + birthDate + 
-                                       "' Not found! Id: '" + id + "'");
-                }
             }
         }
 
@@ -171,18 +211,6 @@ public final class FamilyTreeStatsCalculator
         List<Statistics> stats = new ArrayList<>();
         cacheSet.forEach((curcache) -> stats.add(curcache.calculateStatistics()));
         return stats;
-    }
-    
-    private static Cache getByLocalDate(Map<Integer, Cache> cache, LocalDate date)
-    {
-        if (date == null)
-        {
-            return cache.get(null);
-        }       
-        else
-        {
-            return cache.getOrDefault(date.getYear(), cache.get(null));
-        }
     }
     
     /**
