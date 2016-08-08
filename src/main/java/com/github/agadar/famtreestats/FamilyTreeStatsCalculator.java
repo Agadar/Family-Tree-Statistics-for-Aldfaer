@@ -32,19 +32,46 @@ public final class FamilyTreeStatsCalculator
     private final static DateTimeFormatter YearMonthDayFormat = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
-    public Statistics calculate(File file) throws IOException
-    {      
-        return calculate(file, 0, 0);
+    /** Data retrieved from the csv file. */
+    private final List<Map<String, String>> CsvData;
+    
+    /**
+     * Constructs a new calculator using data read from the given file.
+     * 
+     * @param file
+     * @throws IOException 
+     */
+    public FamilyTreeStatsCalculator(File file) throws IOException
+    {
+        this.CsvData = readPersonsFromFile(file);
     }
     
-    public Statistics calculate(File file, int yearFrom, int yearTo) throws IOException
-    { 
-        final List<Map<String, String>> csvData = readPersonsFromFile(file);        
+    /**
+     * See calculate(...). Calls it with interval = 0, yearFrom = 0, yearTo = 0.
+     * 
+     * @return
+     * @throws IOException 
+     */
+    public Statistics calculate() throws IOException
+    {      
+        return calculate(0, 0);
+    }
+    
+    /**
+     * See calculate(...). Calls it with interval = 0.
+     * 
+     * @param yearFrom
+     * @param yearTo
+     * @return
+     * @throws IOException 
+     */
+    public Statistics calculate(int yearFrom, int yearTo) throws IOException
+    {        
         final Cache cache = new Cache(new PeriodYears(yearFrom, yearTo));
         final boolean ignoreDates = yearFrom < 1 || yearTo < 1;
         
         // Iterate over retrieved data.
-        for (Map<String, String> map : csvData)
+        for (Map<String, String> map : CsvData)
         {
             // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
@@ -90,9 +117,16 @@ public final class FamilyTreeStatsCalculator
         return cache.calculateStatistics();
     }
     
-    public List<Statistics> calculate(File file, int interval) throws IOException
+    /**
+     * See calculate(...). Calls it with yearFrom = 1 and yearTo = 3000.
+     * 
+     * @param interval
+     * @return
+     * @throws IOException 
+     */
+    public List<Statistics> calculate(int interval) throws IOException
     { 
-        return calculate(file, 1, 2999, interval);
+        return calculate(1, 3000, interval);
     }
     
     /**
@@ -101,7 +135,6 @@ public final class FamilyTreeStatsCalculator
      * yearFrom or yearTo == -1 then those values are ignored. If interval == -1 
      * then the value is ignored.
      * 
-     * @param file the persons CSV-file
      * @param yearFrom lower bound
      * @param yearTo upper bound
      * @param interval the interval (in years)
@@ -109,54 +142,14 @@ public final class FamilyTreeStatsCalculator
      * @throws IOException IOException if something went wrong while 
      * finding/reading the file
      */
-    public List<Statistics> calculate(File file, int yearFrom, int yearTo, int interval) throws IOException
+    public List<Statistics> calculate(int yearFrom, int yearTo, int interval) throws IOException
     {
-        // Retrieve data from csv file.       
-        final List<Map<String, String>> csvData = readPersonsFromFile(file);
-
-        // Create cache maps.    
-        final List<Cache> cacheSet = new ArrayList<>();
-        final Map<Integer, Cache> cacheYears = new TreeMap<>(); 
+        // Create cache map.
+        final Map<PeriodYears, Cache> cacheYears = new TreeMap<>(); 
         final Cache defaultCache = new Cache(null);
-//        int curStart = yearFrom;
-//        
-//        // Fill in for the intervals, but only if an interval is set.
-//        if (interval != -1)
-//        {
-//            int curEnd = yearFrom + interval - (yearFrom % interval) - 1;
-//            
-//            while (curEnd < yearTo)
-//            {
-//                // Fill cacheSet.
-//                final PeriodYears curPeriod = new PeriodYears(curStart, curEnd);
-//                final Cache cache = new Cache(curPeriod);
-//                cacheSet.add(cache);
-//
-//                // Fill cacheYears.
-//                for (int i = curStart; i <= curEnd; i++)
-//                {
-//                    cacheYears.put(i, cache);
-//                }
-//
-//                // Increment values for next loop.
-//                curStart = curEnd + 1;
-//                curEnd += interval;
-//            }
-//        }
-//        
-//        // Fill cacheSet.
-//        final PeriodYears curPeriod = new PeriodYears(curStart, yearTo);
-//        final Cache cache = new Cache(curPeriod);
-//        cacheSet.add(cache);
-//        
-//        // Fill cacheYears.
-//        for (int i = curStart; i <= yearTo; i++)
-//        {
-//            cacheYears.put(i, cache);
-//        }
         
         // Iterate over retrieved data.
-        for (Map<String, String> map : csvData)
+        for (Map<String, String> map : CsvData)
         {
             // Retrieve and parse values.
             final LocalDate marriageDate = dateStringToDate(map.get(
@@ -178,85 +171,80 @@ public final class FamilyTreeStatsCalculator
             if (marriageDate != null)
             {
                 Cache curCache = getOrCreateCache(marriageDate.getYear(), cacheYears,
-                    cacheSet, yearFrom, yearTo, interval, defaultCache);
-                //Cache curCache = cacheYears.get(marriageDate.getYear());
-                //if (curCache != null)
-                //{
-                    curCache.processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
+                    yearFrom, yearTo, interval, defaultCache);
+                curCache.processChildrenAtMarriage(id, fatherId, motherId, relationId, partnerId, 
                         relationType);
-                    curCache.processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
-                //}
+                curCache.processAgeAtMarriage(birthDate, marriageDate, relationType, sexType);
             }
             
             // Process avg age at death and number of deaths.
             if (deathDate != null)
             {
                 Cache curCache = getOrCreateCache(deathDate.getYear(), cacheYears,
-                    cacheSet, yearFrom, yearTo, interval, defaultCache);
-                
-                //Cache curCache = cacheYears.get(deathDate.getYear());
-                //if (curCache != null)
-                //{
-                    curCache.processAgeAtDeath(birthDate, deathDate, sexType);
-                    curCache.processDeath(deathDate);
-                //}
+                    yearFrom, yearTo, interval, defaultCache);
+                curCache.processAgeAtDeath(birthDate, deathDate, sexType);
+                curCache.processDeath(deathDate);
             }
             
             // Process births.
             if (birthDate != null)
             {
                 Cache curCache = getOrCreateCache(birthDate.getYear(), cacheYears,
-                    cacheSet, yearFrom, yearTo, interval, defaultCache);
-                
-                //Cache curCache = cacheYears.get(birthDate.getYear());
-                //if (curCache != null)
-                //{
-                    curCache.processBirth(birthDate);
-                //}
+                    yearFrom, yearTo, interval, defaultCache);
+                curCache.processBirth(birthDate);
             }
         }
 
         // Calculate statistics from caches and return them.
         List<Statistics> stats = new ArrayList<>();
-        cacheSet.forEach((curcache) -> stats.add(curcache.calculateStatistics()));
+        cacheYears.forEach((k, v) -> stats.add(v.calculateStatistics()));
         return stats;
     }
     
-    private static Cache getOrCreateCache(int year, Map<Integer, Cache> cacheYears, 
-            List<Cache> cacheSet, int yearFrom, int yearTo, int interval, Cache defaultCache)
+    /**
+     * Gets or creates a cache from/in the given map, using a period calculated
+     * from the given year, yearFrom, yearTo, and interval, and returns it.
+     * 
+     * @param year
+     * @param cacheYears
+     * @param yearFrom
+     * @param yearTo
+     * @param interval
+     * @param defaultCache
+     * @return 
+     */
+    private static Cache getOrCreateCache(int year, Map<PeriodYears, Cache> cacheYears, 
+            int yearFrom, int yearTo, int interval, Cache defaultCache)
     {
-        Cache cache = cacheYears.get(year); // Try get cache from cacheYears.
-        
-        // If the cache isn't in cacheYears, create and add it to cacheYears.
+        // Just return the given default if year < yearFrom or year > yearTo.
+        if (year < yearFrom || year > yearTo)
+        {
+            return defaultCache;
+        }
+
+        // Set the period bounds to the given yearFrom and yearTo.
+        int periodStart = yearFrom;
+        int periodEnd = yearTo;
+
+        // If interval is given, calculate new values for periodStart and periodEnd.
+        if (interval > 0)
+        {
+            periodStart = year - ((year - yearFrom) % interval);
+            periodEnd = Math.min(periodStart + interval - 1, yearTo);
+        }
+
+        // Instantiate a period, attempt to retrieve existing cache.
+        final PeriodYears period = new PeriodYears(periodStart, periodEnd);
+        Cache cache = cacheYears.get(period);
+
+        // If no cache exists mapped to the period, create and add it.
         if (cache == null)
         {
-            // If year is not between yearFrom and yearTo, return default cache.
-            if (year < yearFrom || year > yearTo)
-            {
-                return defaultCache;
-            }
-            
-            int periodStart = yearFrom;
-            int periodEnd = yearTo;
-            
-            if (interval > 0)
-            {
-                periodStart = year - ((year - yearFrom) % interval);
-                periodEnd = Math.min(periodStart + interval - 1, yearTo);
-            }
-            
-            cache = new Cache(new PeriodYears(periodStart, periodEnd));
-            cacheYears.put(year, cache);
+            cache = new Cache(period);
+            cacheYears.put(period, cache);
         }
         
-        // If the cache isn't in cacheSet yet, add it.
-        if (!cacheSet.contains(cache))
-        {
-            System.out.println("added! " + cache.Period.YearFrom + " - " + cache.Period.YearTo);
-            cacheSet.add(cache);
-        }
-        
-        return cache;   // Return the retrieved/created cache.
+        return cache;   // Return retrieved/created cache.
     }
     
     /**

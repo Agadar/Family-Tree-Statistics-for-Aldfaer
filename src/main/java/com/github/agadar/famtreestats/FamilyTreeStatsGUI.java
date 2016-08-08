@@ -212,7 +212,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             {
                 // Read from the file and do calculations.
                 final File file = fileChooser.getSelectedFile();
-                final FamilyTreeStatsCalculator calc = new FamilyTreeStatsCalculator();
+                final FamilyTreeStatsCalculator calc = new FamilyTreeStatsCalculator(file);
                 List<Statistics> stats;
                 
                 if (ChkBxInterval.isSelected())
@@ -223,11 +223,11 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                     {
                         final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
                         final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
-                        stats = calc.calculate(file, yearFrom, yearTo, interval);
+                        stats = calc.calculate(yearFrom, yearTo, interval);
                     }
                     else
                     {
-                        stats = calc.calculate(file, interval);
+                        stats = calc.calculate(interval);
                     }
                 }
                 else
@@ -238,11 +238,11 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                     {
                         final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
                         final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());                        
-                        stats.add(calc.calculate(file, yearFrom, yearTo));
+                        stats.add(calc.calculate(yearFrom, yearTo));
                     }
                     else
                     {
-                        stats.add(calc.calculate(file));
+                        stats.add(calc.calculate());
                     }
                 }
                 
