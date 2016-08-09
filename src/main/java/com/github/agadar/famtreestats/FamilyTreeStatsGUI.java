@@ -15,6 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  * Main GUI frame for the program.
@@ -68,18 +70,17 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
     {
 
         BtnReadFile = new javax.swing.JButton();
-        ScrollPaneResults = new javax.swing.JScrollPane();
-        TextAreaResults = new javax.swing.JTextArea();
-        LabelLink = new javax.swing.JLabel();
         TextFieldToDate = new javax.swing.JFormattedTextField();
         TextFieldFromDate = new javax.swing.JFormattedTextField();
         LabelDateAnd = new javax.swing.JLabel();
         ChkBxUseDates = new javax.swing.JCheckBox();
         ChkBxInterval = new javax.swing.JCheckBox();
         ComboBoxInterval = new javax.swing.JComboBox<>();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        TableStatistics = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Family Tree Statistics for Aldfaer 1.1.0");
+        setTitle("Family Tree Statistics for Aldfaer 1.2.0");
         setIconImages(null);
         setName(""); // NOI18N
 
@@ -90,20 +91,6 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
                 BtnReadFileActionPerformed(evt);
-            }
-        });
-
-        TextAreaResults.setColumns(20);
-        TextAreaResults.setRows(5);
-        ScrollPaneResults.setViewportView(TextAreaResults);
-
-        LabelLink.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        LabelLink.setText("<html>Source code and downloads can be found at the <a href='/'>GitHub repository</a>.</html>");
-        LabelLink.addMouseListener(new java.awt.event.MouseAdapter()
-        {
-            public void mouseClicked(java.awt.event.MouseEvent evt)
-            {
-                LabelLinkMouseClicked(evt);
             }
         });
 
@@ -148,17 +135,30 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         });
 
         ComboBoxInterval.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "5", "10", "25", "50", "100", "250", "500", "1000" }));
+        ComboBoxInterval.setEnabled(false);
+
+        TableStatistics.setAutoCreateRowSorter(true);
+        TableStatistics.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][]
+            {
+
+            },
+            new String []
+            {
+
+            }
+        ));
+        jScrollPane1.setViewportView(TableStatistics);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(LabelLink, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-                    .addComponent(ScrollPaneResults)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(ChkBxInterval)
@@ -193,9 +193,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                             .addComponent(ComboBoxInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ScrollPaneResults, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(LabelLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -246,28 +244,8 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                     }
                 }
                 
-                stats.forEach((stat ->  
-                {
-                    String statsText = "";
-                    if (stat.Period != null)
-                    {
-                        statsText += "Period: " + stat.Period.YearFrom + " to " 
-                                       + stat.Period.YearTo + "\n";
-                    }
-                    statsText += String.format(statsTextFormat, stat.AgeAtMarriageBoth,
-                        stat.AgeAtMarriageMale, stat.AgeAtMarriageFemale,
-                        stat.AgeAtDeathBoth, stat.AgeAtDeathMale, stat.AgeAtDeathFemale,
-                        stat.ChildenPerMarriage, stat.Deaths, stat.Births);
-                    statsText += "--------------------------------";
-                    System.out.println(statsText);
-                }));
-
-                // Print the results in the text area.
-//                final String statsText = String.format(statsTextFormat, stats.AgeAtMarriageBoth,
-//                    stats.AgeAtMarriageMale, stats.AgeAtMarriageFemale,
-//                    stats.AgeAtDeathBoth, stats.AgeAtDeathMale, stats.AgeAtDeathFemale,
-//                    stats.ChildenPerMarriage, stats.Deaths, stats.Births);
-//                TextAreaResults.setText(statsText);
+                // Show results in the table.
+                updateTable(stats);
             }
             catch (IOException ex) 
             {
@@ -276,11 +254,6 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             }
         }
     }//GEN-LAST:event_BtnReadFileActionPerformed
-
-    private void LabelLinkMouseClicked(java.awt.event.MouseEvent evt)//GEN-FIRST:event_LabelLinkMouseClicked
-    {//GEN-HEADEREND:event_LabelLinkMouseClicked
-        tryOpenLink(repositoryLink);
-    }//GEN-LAST:event_LabelLinkMouseClicked
 
     private void ChkBxUseDatesActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ChkBxUseDatesActionPerformed
     {//GEN-HEADEREND:event_ChkBxUseDatesActionPerformed
@@ -293,6 +266,46 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         ComboBoxInterval.setEnabled(ChkBxInterval.isSelected());
     }//GEN-LAST:event_ChkBxIntervalActionPerformed
 
+    /**
+     * Updates the table, using the given statistics.
+     * 
+     * @param statistics 
+     */
+    private void updateTable(List<Statistics> statistics)
+    {
+        List<String> columns = new ArrayList<>();
+        List<String[]> values = new ArrayList<>();
+
+        // Add column headers.
+        columns.add("Year From");
+        columns.add("Year To");
+        columns.add("Avg. age at marriage (both)");
+        columns.add("Avg. age at marriage (male)");
+        columns.add("Avg. age at marriage (female)");
+        columns.add("Avg. age at death (both)");
+        columns.add("Avg. age at death (male)");
+        columns.add("Avg. age at death (female)");
+        columns.add("Avg. # of children per marriage");
+        columns.add("Deaths");
+        columns.add("Births");
+
+        // Add values
+        for (Statistics stat : statistics) 
+        {
+            final String yearFrom = stat.Period.YearFrom < 1 ? "-" :  String.valueOf(stat.Period.YearFrom);
+            final String yearTo = stat.Period.YearTo < 1 ? "-" :  String.valueOf(stat.Period.YearTo);
+            values.add(new String[] { yearFrom, yearTo, String.valueOf(stat.AgeAtMarriageBoth),
+                String.valueOf(stat.AgeAtMarriageMale), String.valueOf(stat.AgeAtMarriageFemale),
+                String.valueOf(stat.AgeAtDeathBoth), String.valueOf(stat.AgeAtDeathMale),
+                String.valueOf(stat.AgeAtDeathFemale), String.valueOf(stat.ChildenPerMarriage),
+                String.valueOf(stat.Deaths), String.valueOf(stat.Births)});
+        }
+
+        // Create and set table model.
+        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][] {}), columns.toArray());
+        TableStatistics.setModel(tableModel);
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -346,10 +359,9 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
     private javax.swing.JCheckBox ChkBxUseDates;
     private javax.swing.JComboBox<String> ComboBoxInterval;
     private javax.swing.JLabel LabelDateAnd;
-    private javax.swing.JLabel LabelLink;
-    private javax.swing.JScrollPane ScrollPaneResults;
-    private javax.swing.JTextArea TextAreaResults;
+    private javax.swing.JTable TableStatistics;
     private javax.swing.JFormattedTextField TextFieldFromDate;
     private javax.swing.JFormattedTextField TextFieldToDate;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }

@@ -70,7 +70,6 @@ public final class FamilyTreeStatsCalculator
         final Cache cache = new Cache(yearFrom, yearTo);
         final boolean ignoreDates = yearFrom < 1 || yearTo < 1;
         final List<Statistics> stats = calculate(yearFrom, yearTo, 0, cache);
-        System.out.println("Length of stats: " + stats.size());
         
         if (ignoreDates)
         {
