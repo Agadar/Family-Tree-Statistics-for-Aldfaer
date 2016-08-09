@@ -2,11 +2,8 @@ package com.github.agadar.famtreestats;
 
 import com.github.agadar.famtreestats.domain.Statistics;
 import com.github.agadar.famtreestats.misc.MultiLineHeaderRenderer;
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -23,29 +20,21 @@ import javax.swing.table.TableModel;
 
 /**
  * Main GUI frame for the program.
- * 
+ *
  * @author Agadar <https://github.com/Agadar/>
  */
 public class FamilyTreeStatsGUI extends javax.swing.JFrame
 {
-    /** Link to this software's repository. */
-    private final static String repositoryLink = "https://github.com/Agadar/"
-            + "Family-Tree-Statistics-for-Aldfaer";
-    
-    /** Format for the text printed to the text area. */
-    private final static String statsTextFormat = "Average age when married (all): %s years%n"
-            + "Average age when married (male): %s years%n"
-            + "Average age when married (female): %s years%n%n"
-            + "Average age when deceased (all): %s years%n"
-            + "Average age when deceased (male): %s years%n"
-            + "Average age when deceased (female): %s years%n%n"
-            + "Average number of children (married couples): %s%n"
-            + "Deaths: %s%n"
-            + "Births: %s%n";
-       
-    /** File chooser filter for the open file dialog. */
+    /**
+     * File chooser filter for the open file dialog.
+     */
     private final JFileChooser fileChooser = new JFileChooser();
-    
+
+    /**
+     * The calculator that is currently being used.
+     */
+    private FamilyTreeStatsCalculator calculator;
+
     /**
      * Creates new form FamilyTreeStatsGUI.
      */
@@ -54,10 +43,11 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         initComponents();
         this.setLocationRelativeTo(null);
         BtnReadFile.requestFocusInWindow();
-        
+
         // Set file extension filter.
-        FileNameExtensionFilter csvFilter = new FileNameExtensionFilter("CSV file "
-                + "(*.csv;*.txt)", "csv", "txt");
+        FileNameExtensionFilter csvFilter = new FileNameExtensionFilter(
+                "CSV file "
+                        + "(*.csv;*.txt)", "csv", "txt");
         fileChooser.addChoosableFileFilter(csvFilter);
         fileChooser.setFileFilter(csvFilter);
     }
@@ -81,13 +71,15 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         ComboBoxInterval = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         TableStatistics = new javax.swing.JTable();
+        BtnReCalculate = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Family Tree Statistics for Aldfaer 1.2.0");
         setIconImages(null);
         setName(""); // NOI18N
+        setResizable(false);
 
-        BtnReadFile.setText("Open & read file");
+        BtnReadFile.setText("Load file & calculate statistics");
         BtnReadFile.setFocusPainted(false);
         BtnReadFile.addActionListener(new java.awt.event.ActionListener()
         {
@@ -153,6 +145,17 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         ));
         jScrollPane1.setViewportView(TableStatistics);
 
+        BtnReCalculate.setText("Re-calculate statistics");
+        BtnReCalculate.setEnabled(false);
+        BtnReCalculate.setFocusPainted(false);
+        BtnReCalculate.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                BtnReCalculateActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -161,7 +164,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(ChkBxInterval)
@@ -176,14 +179,16 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(TextFieldToDate, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtnReCalculate, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(TextFieldFromDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -193,8 +198,10 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
                         .addGap(5, 5, 5)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ChkBxInterval)
-                            .addComponent(ComboBoxInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(ComboBoxInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(BtnReadFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(BtnReCalculate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
                 .addContainerGap())
@@ -209,51 +216,22 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         // Show open file dialog.
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
-            try 
+            try
             {
                 // Read from the file and do calculations.
                 final File file = fileChooser.getSelectedFile();
-                final FamilyTreeStatsCalculator calc = new FamilyTreeStatsCalculator(file);
-                List<Statistics> stats;
-                
-                if (ChkBxInterval.isSelected())
-                {
-                    int interval = Integer.valueOf((String) ComboBoxInterval.getSelectedItem());
-                    
-                    if (ChkBxUseDates.isSelected())
-                    {
-                        final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
-                        final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());
-                        stats = calc.calculate(yearFrom, yearTo, interval);
-                    }
-                    else
-                    {
-                        stats = calc.calculate(interval);
-                    }
-                }
-                else
-                {
-                    stats = new ArrayList<>();
-                    
-                    if (ChkBxUseDates.isSelected())
-                    {
-                        final int yearFrom = Integer.valueOf(TextFieldFromDate.getText().trim());
-                        final int yearTo = Integer.valueOf(TextFieldToDate.getText().trim());                        
-                        stats.add(calc.calculate(yearFrom, yearTo));
-                    }
-                    else
-                    {
-                        stats.add(calc.calculate());
-                    }
-                }
-                
-                // Show results in the table.
-                updateTable(stats);
+                calculator = new FamilyTreeStatsCalculator(file);
+                BtnReCalculateActionPerformed(evt);
+
+                // Enable re-calculate button.
+                BtnReCalculate.setEnabled(true);
             }
-            catch (IOException ex) 
+            catch (IOException ex)
             {
-                JOptionPane.showMessageDialog(this, "Failed to read the selected file.",
-                    "An error occured", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                                              "Failed to read the selected file.",
+                                              "An error occured",
+                                              JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_BtnReadFileActionPerformed
@@ -269,10 +247,55 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         ComboBoxInterval.setEnabled(ChkBxInterval.isSelected());
     }//GEN-LAST:event_ChkBxIntervalActionPerformed
 
+    private void BtnReCalculateActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BtnReCalculateActionPerformed
+    {//GEN-HEADEREND:event_BtnReCalculateActionPerformed
+        // According to selected options, calculate statistics.
+        List<Statistics> stats;
+
+        if (ChkBxInterval.isSelected())
+        {
+            int interval = Integer.valueOf((String) ComboBoxInterval.
+                    getSelectedItem());
+
+            if (ChkBxUseDates.isSelected())
+            {
+                final int yearFrom = Integer.valueOf(
+                        TextFieldFromDate.getText().trim());
+                final int yearTo = Integer.valueOf(TextFieldToDate.getText().
+                        trim());
+                stats = calculator.calculate(yearFrom, yearTo, interval);
+            }
+            else
+            {
+                stats = calculator.calculate(interval);
+            }
+        }
+        else
+        {
+            stats = new ArrayList<>();
+
+            if (ChkBxUseDates.isSelected())
+            {
+                final int yearFrom = Integer.valueOf(
+                        TextFieldFromDate.getText().trim());
+                final int yearTo = Integer.valueOf(TextFieldToDate.getText().
+                        trim());
+                stats.add(calculator.calculate(yearFrom, yearTo));
+            }
+            else
+            {
+                stats.add(calculator.calculate());
+            }
+        }
+
+        // Show results in the table and enable re-calculate button.
+        updateTable(stats);
+    }//GEN-LAST:event_BtnReCalculateActionPerformed
+
     /**
      * Updates the table, using the given statistics.
-     * 
-     * @param statistics 
+     *
+     * @param statistics
      */
     private void updateTable(List<Statistics> statistics)
     {
@@ -293,21 +316,32 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         columns.add("Births");
 
         // Add values
-        for (Statistics stat : statistics) 
+        for (Statistics stat : statistics)
         {
-            final String yearFrom = stat.Period.YearFrom < 1 ? "-" :  String.valueOf(stat.Period.YearFrom);
-            final String yearTo = stat.Period.YearTo < 1 ? "-" :  String.valueOf(stat.Period.YearTo);
-            values.add(new String[] { yearFrom, yearTo, String.valueOf(stat.AgeAtMarriageBoth),
-                String.valueOf(stat.AgeAtMarriageMale), String.valueOf(stat.AgeAtMarriageFemale),
-                String.valueOf(stat.AgeAtDeathBoth), String.valueOf(stat.AgeAtDeathMale),
-                String.valueOf(stat.AgeAtDeathFemale), String.valueOf(stat.ChildenPerMarriage),
-                String.valueOf(stat.Deaths), String.valueOf(stat.Births)});
+            final String yearFrom = stat.Period.YearFrom < 1 ? "-" : String.
+                    valueOf(stat.Period.YearFrom);
+            final String yearTo = stat.Period.YearTo < 1 ? "-" : String.valueOf(
+                    stat.Period.YearTo);
+            values.add(new String[]
+            {
+                yearFrom, yearTo, String.valueOf(stat.AgeAtMarriageBoth),
+                String.valueOf(stat.AgeAtMarriageMale), String.valueOf(
+                stat.AgeAtMarriageFemale),
+                String.valueOf(stat.AgeAtDeathBoth), String.valueOf(
+                stat.AgeAtDeathMale),
+                String.valueOf(stat.AgeAtDeathFemale), String.valueOf(
+                stat.ChildenPerMarriage),
+                String.valueOf(stat.Deaths), String.valueOf(stat.Births)
+            });
         }
 
         // Create and set table model.
-        TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][] {}), columns.toArray());
+        TableModel tableModel = new DefaultTableModel(values.toArray(
+                new Object[][]
+                {
+                }), columns.toArray());
         TableStatistics.setModel(tableModel);
-        
+
         // Set multi-line column headers.
         MultiLineHeaderRenderer renderer = new MultiLineHeaderRenderer();
         Enumeration e = TableStatistics.getColumnModel().getColumns();
@@ -316,7 +350,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             ((TableColumn) e.nextElement()).setHeaderRenderer(renderer);
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -326,45 +360,26 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         {
             // Just use the windows look and feel, because that's what we see in
             // the designer. This way, what we see is what we get.
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            UIManager.setLookAndFeel(
+                    "com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 
             /* Create and display the form */
             java.awt.EventQueue.invokeLater(() -> 
-            {
-                new FamilyTreeStatsGUI().setVisible(true);
+                    {
+                        new FamilyTreeStatsGUI().setVisible(true);
             });
         }
         catch (ClassNotFoundException | InstantiationException |
-                IllegalAccessException |
-                UnsupportedLookAndFeelException ex)
+               IllegalAccessException |
+               UnsupportedLookAndFeelException ex)
         {
             Logger.getLogger(FamilyTreeStatsGUI.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
     }
-    
-    /**
-     * Tries opening the given url in the desktop's default browser.
-     * 
-     * @param url the url to browse to
-     */
-    private static void tryOpenLink(String url)
-    {
-        if (Desktop.isDesktopSupported())
-        {
-            try
-            {
-                Desktop.getDesktop().browse(new URI(url));
-            }
-            catch (IOException | URISyntaxException ex)
-            {
-                Logger.getLogger(FamilyTreeStatsGUI.class.getName()).
-                        log(Level.SEVERE, null, ex);
-            }
-        }
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    protected javax.swing.JButton BtnReCalculate;
     protected javax.swing.JButton BtnReadFile;
     private javax.swing.JCheckBox ChkBxInterval;
     private javax.swing.JCheckBox ChkBxUseDates;

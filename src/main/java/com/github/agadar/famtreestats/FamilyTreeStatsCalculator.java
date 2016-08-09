@@ -50,9 +50,8 @@ public final class FamilyTreeStatsCalculator
      * See calculate(...). Calls it with interval = 0, yearFrom = 0, yearTo = 0.
      * 
      * @return
-     * @throws IOException 
      */
-    public Statistics calculate() throws IOException
+    public Statistics calculate()
     {      
         return calculate(0, 0);
     }
@@ -63,9 +62,8 @@ public final class FamilyTreeStatsCalculator
      * @param yearFrom
      * @param yearTo
      * @return
-     * @throws IOException 
      */
-    public Statistics calculate(int yearFrom, int yearTo) throws IOException
+    public Statistics calculate(int yearFrom, int yearTo)
     {        
         final Cache cache = new Cache(yearFrom, yearTo);
         final boolean ignoreDates = yearFrom < 1 || yearTo < 1;
@@ -86,9 +84,8 @@ public final class FamilyTreeStatsCalculator
      * 
      * @param interval
      * @return
-     * @throws IOException 
      */
-    public List<Statistics> calculate(int interval) throws IOException
+    public List<Statistics> calculate(int interval)
     { 
         return calculate(1, 3000, interval);
     }
@@ -100,10 +97,8 @@ public final class FamilyTreeStatsCalculator
      * @param yearTo upper bound
      * @param interval the interval (in years)
      * @return the calculated statistics, mapped to years
-     * @throws IOException IOException if something went wrong while 
-     * finding/reading the file
      */
-    public List<Statistics> calculate(int yearFrom, int yearTo, int interval) throws IOException
+    public List<Statistics> calculate(int yearFrom, int yearTo, int interval)
     {
         return calculate(yearFrom, yearTo, interval, new Cache(null));
     }
@@ -116,10 +111,9 @@ public final class FamilyTreeStatsCalculator
      * @param interval
      * @param defaultCache
      * @return
-     * @throws IOException 
      */
     private List<Statistics> calculate(int yearFrom, int yearTo, int interval, 
-            Cache defaultCache) throws IOException
+            Cache defaultCache)
     {
         // Create cache map.
         final Map<PeriodYears, Cache> cacheYears = new TreeMap<>();
