@@ -1,12 +1,14 @@
 package com.github.agadar.famtreestats;
 
 import com.github.agadar.famtreestats.domain.Statistics;
+import com.github.agadar.famtreestats.misc.MultiLineHeaderRenderer;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +18,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 /**
@@ -157,7 +160,7 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -277,15 +280,15 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         List<String[]> values = new ArrayList<>();
 
         // Add column headers.
-        columns.add("Year From");
-        columns.add("Year To");
-        columns.add("Avg. age at marriage (both)");
-        columns.add("Avg. age at marriage (male)");
-        columns.add("Avg. age at marriage (female)");
-        columns.add("Avg. age at death (both)");
-        columns.add("Avg. age at death (male)");
-        columns.add("Avg. age at death (female)");
-        columns.add("Avg. # of children per marriage");
+        columns.add("Year\nFrom");
+        columns.add("Year\nTo");
+        columns.add("Avg. age\nat marriage\n(both)");
+        columns.add("Avg. age\nat marriage\n(male)");
+        columns.add("Avg. age\nat marriage\n(female)");
+        columns.add("Avg. age\nat death\n(both)");
+        columns.add("Avg. age\nat death\n(male)");
+        columns.add("Avg. age\nat death\n(female)");
+        columns.add("Avg. # of\nchildren per\nmarriage");
         columns.add("Deaths");
         columns.add("Births");
 
@@ -304,6 +307,14 @@ public class FamilyTreeStatsGUI extends javax.swing.JFrame
         // Create and set table model.
         TableModel tableModel = new DefaultTableModel(values.toArray(new Object[][] {}), columns.toArray());
         TableStatistics.setModel(tableModel);
+        
+        // Set multi-line column headers.
+        MultiLineHeaderRenderer renderer = new MultiLineHeaderRenderer();
+        Enumeration e = TableStatistics.getColumnModel().getColumns();
+        while (e.hasMoreElements())
+        {
+            ((TableColumn) e.nextElement()).setHeaderRenderer(renderer);
+        }
     }
     
     /**
