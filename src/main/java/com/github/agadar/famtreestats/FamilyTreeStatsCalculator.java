@@ -73,9 +73,13 @@ public final class FamilyTreeStatsCalculator
         {
             return cache.calculateStatistics();
         }
-        else
+        else if (stats.size() > 0)
         {
             return stats.get(0);
+        }
+        else
+        {
+            return new Statistics(yearFrom, yearTo, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
     }
     
